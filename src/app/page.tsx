@@ -1,12 +1,10 @@
 "use client";
 
-import { SplashScreen } from "@/components/SplashScreen";
 import { HomeHeader } from "@/components/HomeHeader";
 import { DailyQuizBanner } from "@/components/DailyQuizBanner";
 import { PodiumWidget } from "@/components/PodiumWidget";
 import { ModeCard } from "@/components/ModeCard";
 import { GAME_MODES } from "@/data/modes";
-import { useHasSeenSplash, markSplashSeen } from "@/lib/splashSession";
 
 export default function Home() {
   return (

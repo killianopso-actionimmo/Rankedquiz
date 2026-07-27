@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f4f5fa;
+  --foreground: #1b1f3b;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  overscroll-behavior-y: none;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@layer components {
+  .glass-card {
+    @apply relative rounded-xl2 border border-black/[0.05] bg-background-card shadow-card;
+  }
+
+  .glass-card-hover {
+    @apply transition-all duration-200 hover:shadow-card-hover active:scale-[0.98];
+  }
+
+  .neon-border-blue {
+    @apply border border-primary/25 shadow-[0_10px_28px_rgba(0,71,171,0.16)];
+  }
+
+  .neon-border-magenta {
+    @apply border border-secondary/25 shadow-[0_10px_28px_rgba(255,20,147,0.16)];
+  }
+
+  .neon-border-gold {
+    @apply border border-highlight/40 shadow-[0_10px_28px_rgba(255,188,0,0.18)];
+  }
+
+  .neon-text {
+    text-shadow: 0 0 12px currentColor;
+  }
+
+  .btn-tap {
+    @apply min-h-[3.25rem] touch-manipulation select-none active:scale-[0.96];
+  }
+
+  .app-bg {
+    @apply bg-background;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
