@@ -58,14 +58,14 @@ export default function JetpunkPage() {
       setInput(value);
       if (!round || !value.trim()) return;
 
-      const match = round.items.find(
+      const matches = round.items.filter(
         (item) => !foundIds.has(item.id) && isAnswerMatch(value, item.answers)
       );
 
-      if (match) {
+      if (matches.length > 0) {
         setFoundIds((prev) => {
           const next = new Set(prev);
-          next.add(match.id);
+          matches.forEach((match) => next.add(match.id));
           if (next.size % 3 === 0) fireFlameBurst();
           if (next.size === round.items.length) setFinished(true);
           return next;
