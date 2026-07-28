@@ -1380,7 +1380,7 @@ const CURATED_JETPUNK_ROUNDS: JetpunkRound[] = [
   {
     id: "jp-ligue-champions-winners",
     category: "sport",
-    title: "Équipes Ligue des Champions (72)",
+    title: "Équipes Ligue des Champions (71)",
     instructions: "Donne le nom de l'équipe qui a remporté la Ligue des Champions cette année.",
     timeLimitSeconds: 300,
     items: [
@@ -1455,7 +1455,6 @@ const CURATED_JETPUNK_ROUNDS: JetpunkRound[] = [
       { id: "69", hint: "1958", answers: ["Real Madrid"] },
       { id: "70", hint: "1957", answers: ["Real Madrid"] },
       { id: "71", hint: "1956", answers: ["Real Madrid"] },
-      { id: "72", hint: "1955", answers: ["Real Madrid"] },
     ],
   },
 
