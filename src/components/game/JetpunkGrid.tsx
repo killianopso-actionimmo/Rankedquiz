@@ -34,10 +34,15 @@ export function JetpunkGrid({ items, foundIds, revealed }: JetpunkGridProps) {
             )}
           >
             {showAnswer ? (
-              <span className="flex items-center gap-1 font-display text-sm font-bold text-ink">
-                {isFound && <Check className="h-3.5 w-3.5 shrink-0 text-success" />}
-                {item.answers[0]}
-              </span>
+              <div className="flex flex-col items-center gap-1.5">
+                <span className="text-xs font-medium text-ink-faint">
+                  {item.hint ?? "?"}
+                </span>
+                <span className="flex items-center gap-1 font-display text-sm font-bold text-ink">
+                  {isFound && <Check className="h-3.5 w-3.5 shrink-0 text-success" />}
+                  {item.answers[0]}
+                </span>
+              </div>
             ) : (
               <span className="text-xs font-medium text-ink-faint">
                 {item.hint ?? "?"}
