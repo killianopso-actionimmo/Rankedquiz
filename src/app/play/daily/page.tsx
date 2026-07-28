@@ -182,7 +182,7 @@ export default function DailyQuizPage() {
           index={qIndex}
           total={questions.length}
         />
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {currentQuestion.choices.map((choice, i) => (
             <AnswerButton
               key={`${currentQuestion.id}-${i}`}
