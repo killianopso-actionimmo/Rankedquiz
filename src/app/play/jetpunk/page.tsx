@@ -21,11 +21,12 @@ export default function JetpunkPage() {
   const [foundIds, setFoundIds] = useState<Set<string>>(new Set());
   const [input, setInput] = useState("");
   const [finished, setFinished] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const xpSavedRef = useRef(false);
 
-  const active = !!round && !finished;
-  const { secondsLeft, reset } = useCountdown(round?.timeLimitSeconds ?? 60, {
+  const active = !!round && !finished && !isPaused;
+  const { secondsLeft, reset, addSeconds } = useCountdown(round?.timeLimitSeconds ?? 60, {
     active,
     onExpire: () => setFinished(true),
   });
@@ -35,6 +36,7 @@ export default function JetpunkPage() {
     setFoundIds(new Set());
     setInput("");
     setFinished(false);
+    setIsPaused(false);
     reset(r.timeLimitSeconds);
     xpSavedRef.current = false;
     setTimeout(() => inputRef.current?.focus(), 50);
@@ -56,13 +58,14 @@ export default function JetpunkPage() {
   const handleChange = useCallback(
     (value: string) => {
       setInput(value);
-      if (!round || !value.trim()) return;
+      if (!round || !value.trim() || isPaused) return;
 
       const matches = round.items.filter(
         (item) => !foundIds.has(item.id) && isAnswerMatch(value, item.answers)
       );
 
       if (matches.length > 0) {
+        addSeconds(5 * matches.length);
         setFoundIds((prev) => {
           const next = new Set(prev);
           matches.forEach((match) => next.add(match.id));
@@ -73,7 +76,7 @@ export default function JetpunkPage() {
         setInput("");
       }
     },
-    [round, foundIds]
+    [round, foundIds, isPaused, addSeconds]
   );
 
   if (!round) {
@@ -155,16 +158,24 @@ export default function JetpunkPage() {
             ref={inputRef}
             value={input}
             onChange={(e) => handleChange(e.target.value)}
-            placeholder="Tape ta réponse..."
+            placeholder={isPaused ? "En pause..." : "Tape ta réponse..."}
             autoComplete="off"
             autoCorrect="off"
             spellCheck={false}
-            className="glass-card w-full px-5 py-4 text-lg font-semibold text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-primary"
+            disabled={isPaused}
+            className="glass-card w-full px-5 py-4 text-lg font-semibold text-ink placeholder:text-ink-faint disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary"
           />
           <div className="flex gap-2">
             <p className="flex-1 text-center text-xs text-ink-faint">
               {foundIds.size} / {round.items.length} trouvées
             </p>
+            <button
+              type="button"
+              onClick={() => setIsPaused(!isPaused)}
+              className="px-3 py-2 text-xs font-semibold text-ink-soft hover:text-ink"
+            >
+              {isPaused ? "Reprendre" : "Pause"}
+            </button>
             <button
               type="button"
               onClick={() => setFinished(true)}
