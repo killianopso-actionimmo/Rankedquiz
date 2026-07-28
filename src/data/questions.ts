@@ -1432,7 +1432,7 @@ const CURATED_JETPUNK_ROUNDS: JetpunkRound[] = [
       { id: "46", hint: "1981", answers: ["Liverpool"] },
       { id: "47", hint: "1980", answers: ["Nottingham Forest"] },
       { id: "48", hint: "1979", answers: ["Nottingham Forest"] },
-      { id: "49", hint: "1978", answers: ["Club Brugge"] },
+      { id: "49", hint: "1978", answers: ["Liverpool"] },
       { id: "50", hint: "1977", answers: ["Liverpool"] },
       { id: "51", hint: "1976", answers: ["Bayern Munich"] },
       { id: "52", hint: "1975", answers: ["Bayern Munich"] },
