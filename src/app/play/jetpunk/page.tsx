@@ -108,15 +108,16 @@ export default function JetpunkPage() {
     );
   }
 
-  if (finished) {
-    const success = foundIds.size === round.items.length;
-    const xpGained = calculateXpGain(foundIds.size, round.items.length, "jetpunk");
-    const endXp = startXp + xpGained;
-    const timeTaken = round.timeLimitSeconds - Math.ceil(secondsLeft);
+  const success = finished && foundIds.size === round.items.length;
+  const xpGained = finished ? calculateXpGain(foundIds.size, round.items.length, "jetpunk") : 0;
+  const endXp = startXp + xpGained;
+  const timeTaken = finished ? round.timeLimitSeconds - Math.ceil(secondsLeft) : 0;
+
+  if (finished && success) {
     return (
       <GameOverScreen
-        title={success ? "Grille complétée !" : "Temps écoulé"}
-        celebrate={success}
+        title="Grille complétée !"
+        celebrate
         stats={[
           { label: "Trouvées", value: `${foundIds.size} / ${round.items.length}` },
           { label: "Temps restant", value: `${Math.ceil(secondsLeft)}s` },
@@ -127,7 +128,7 @@ export default function JetpunkPage() {
         category={round.category}
         roundId={round.id}
         timeTaken={timeTaken}
-        isCompleted={success}
+        isCompleted
         startXp={startXp}
         endXp={endXp}
         xpGained={xpGained}
@@ -142,26 +143,59 @@ export default function JetpunkPage() {
       <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-6">
         <div className="mb-3">
           <p className="text-sm text-ink-soft">{round.instructions}</p>
+          {finished && <p className="mt-2 text-sm font-semibold text-danger">Temps écoulé</p>}
         </div>
-        <JetpunkGrid items={round.items} foundIds={foundIds} revealed={false} />
+        <JetpunkGrid items={round.items} foundIds={foundIds} revealed={finished} />
       </div>
 
-      <div className="sticky bottom-0 flex flex-col gap-3 border-t border-black/5 bg-background px-4 py-4 sm:px-6 sm:py-5">
-        <TimerBar secondsLeft={secondsLeft} maxSeconds={round.timeLimitSeconds} />
-        <input
-          ref={inputRef}
-          value={input}
-          onChange={(e) => handleChange(e.target.value)}
-          placeholder="Tape ta réponse..."
-          autoComplete="off"
-          autoCorrect="off"
-          spellCheck={false}
-          className="glass-card w-full px-5 py-4 text-lg font-semibold text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-primary"
-        />
-        <p className="text-center text-xs text-ink-faint">
-          {foundIds.size} / {round.items.length} trouvées
-        </p>
-      </div>
+      {!finished && (
+        <div className="sticky bottom-0 flex flex-col gap-3 border-t border-black/5 bg-background px-4 py-4 sm:px-6 sm:py-5">
+          <TimerBar secondsLeft={secondsLeft} maxSeconds={round.timeLimitSeconds} />
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={(e) => handleChange(e.target.value)}
+            placeholder="Tape ta réponse..."
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
+            className="glass-card w-full px-5 py-4 text-lg font-semibold text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+          <div className="flex gap-2">
+            <p className="flex-1 text-center text-xs text-ink-faint">
+              {foundIds.size} / {round.items.length} trouvées
+            </p>
+            <button
+              type="button"
+              onClick={() => setFinished(true)}
+              className="px-3 py-2 text-xs font-semibold text-ink-soft hover:text-ink"
+            >
+              Forfait
+            </button>
+          </div>
+        </div>
+      )}
+
+      {finished && (
+        <div className="sticky bottom-0 border-t border-black/5 bg-background px-4 py-4 sm:px-6 sm:py-5">
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => startRound(round)}
+              className="flex-1 px-4 py-3 bg-primary text-white rounded-lg font-semibold"
+            >
+              Recommencer
+            </button>
+            <button
+              type="button"
+              onClick={() => setRound(null)}
+              className="flex-1 px-4 py-3 bg-ink/10 text-ink rounded-lg font-semibold"
+            >
+              Retour
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
