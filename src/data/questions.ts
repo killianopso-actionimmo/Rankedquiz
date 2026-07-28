@@ -490,8 +490,8 @@ const CURATED_JETPUNK_ROUNDS: JetpunkRound[] = [
   {
     id: "jp-capitales-europe",
     category: "geographie",
-    title: "Capitales d'Europe (50 pays)",
-    instructions: "Trouve la capitale de chacun de ces 50 pays européens.",
+    title: "Capitales d'Europe (49 pays)",
+    instructions: "Trouve la capitale de chacun de ces 49 pays européens.",
     timeLimitSeconds: 300,
     items: [
       { id: "1", hint: "France", answers: ["Paris"] },
@@ -543,7 +543,6 @@ const CURATED_JETPUNK_ROUNDS: JetpunkRound[] = [
       { id: "47", hint: "Kosovo", answers: ["Pristina", "Prishtine"] },
       { id: "48", hint: "Monténégro", answers: ["Podgorica"] },
       { id: "49", hint: "Géorgie", answers: ["Tbilissi", "Tbilisi"] },
-      { id: "50", hint: "Arménie", answers: ["Erevan", "Yerevan"] },
     ],
   },
 
