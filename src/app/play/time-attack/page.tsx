@@ -18,7 +18,7 @@ import { shuffleQuestionChoices } from "@/data/questions";
 import { filterQuestionsByMode, QuestionSessionManager } from "@/services/questions";
 import type { QcmQuestion } from "@/types/quiz";
 
-const START_SECONDS = 20;
+const START_SECONDS = 60;
 const CORRECT_BONUS = 3;
 const WRONG_PENALTY = -2;
 const IDLE_STATES: AnswerState[] = ["idle", "idle", "idle", "idle"];
