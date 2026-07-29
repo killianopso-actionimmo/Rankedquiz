@@ -57,6 +57,51 @@ const triviaCategoryMap = {
 };
 
 let openTriviaToken = null;
+const translationCache = new Map();
+
+// Translate using Google Translate (free tier: 500k chars/month)
+// Google Translate doesn't require API key for small amounts via the public endpoint
+async function translateToFrench(text) {
+  if (!text) return text;
+
+  // Check cache first
+  if (translationCache.has(text)) {
+    return translationCache.get(text);
+  }
+
+  // Skip if already looks like French (has French accents)
+  if (/[àâäæéèêëïîôöœùûüœç]/i.test(text)) {
+    translationCache.set(text, text);
+    return text;
+  }
+
+  try {
+    // Use a simple approach: encode text and use google translate without API key
+    const encoded = encodeURIComponent(text.substring(0, 500));
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=fr&dt=t&q=${encoded}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+
+    if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+    const data = await response.json();
+    if (data && data[0] && data[0][0]) {
+      const translated = data[0][0][0];
+      translationCache.set(text, translated);
+      return translated;
+    }
+  } catch (error) {
+    console.warn(`⚠️  Translation skipped for "${text.substring(0, 30)}..."`);
+  }
+
+  // Fall back to original
+  translationCache.set(text, text);
+  return text;
+}
 
 // Get session token from Open Trivia DB
 async function getOpenTriviaToken() {
@@ -94,18 +139,24 @@ async function fetchFromOpenTriviaDB(difficulty, token) {
       return [];
     }
 
-    return data.results.map((q) => {
-      const allAnswers = [decodeHTML(q.correct_answer), ...q.incorrect_answers].map(decodeHTML);
-      const correctIdx = allAnswers.indexOf(decodeHTML(q.correct_answer));
+    return Promise.all(
+      data.results.map(async (q) => {
+        const allAnswers = [decodeHTML(q.correct_answer), ...q.incorrect_answers].map(decodeHTML);
+        const correctIdx = allAnswers.indexOf(decodeHTML(q.correct_answer));
 
-      return {
-        question: decodeHTML(q.question),
-        choices: allAnswers,
-        answerIndex: correctIdx,
-        category: categoryMap[q.category] || 'culture-generale',
-        difficulty: difficulty,
-      };
-    });
+        const question = decodeHTML(q.question);
+        const translatedQuestion = await translateToFrench(question);
+        const translatedChoices = await Promise.all(allAnswers.map(a => translateToFrench(a)));
+
+        return {
+          question: translatedQuestion,
+          choices: translatedChoices,
+          answerIndex: translatedChoices.indexOf(translatedChoices[correctIdx]),
+          category: categoryMap[q.category] || 'culture-generale',
+          difficulty: difficulty,
+        };
+      })
+    );
   } catch (error) {
     console.error(`❌ Open Trivia (${difficultyMap[difficulty]}):`, error.message);
     return [];
@@ -123,18 +174,24 @@ async function fetchFromTriviaAPI(difficulty) {
 
     const data = await response.json();
 
-    return data.map((q) => {
-      const allAnswers = [q.correctAnswer, ...q.incorrectAnswers].sort(() => Math.random() - 0.5);
-      const correctIdx = allAnswers.indexOf(q.correctAnswer);
+    return Promise.all(
+      data.map(async (q) => {
+        const allAnswers = [q.correctAnswer, ...q.incorrectAnswers].sort(() => Math.random() - 0.5);
+        const correctIdx = allAnswers.indexOf(q.correctAnswer);
 
-      return {
-        question: q.question.text || q.question,
-        choices: allAnswers,
-        answerIndex: correctIdx,
-        category: triviaCategoryMap[q.category] || 'culture-generale',
-        difficulty: difficulty,
-      };
-    });
+        const question = q.question.text || q.question;
+        const translatedQuestion = await translateToFrench(question);
+        const translatedChoices = await Promise.all(allAnswers.map(a => translateToFrench(a)));
+
+        return {
+          question: translatedQuestion,
+          choices: translatedChoices,
+          answerIndex: translatedChoices.indexOf(translatedChoices[correctIdx]),
+          category: triviaCategoryMap[q.category] || 'culture-generale',
+          difficulty: difficulty,
+        };
+      })
+    );
   } catch (error) {
     console.error(`❌ Trivia API (${difficultyMap[difficulty]}):`, error.message);
     return [];
