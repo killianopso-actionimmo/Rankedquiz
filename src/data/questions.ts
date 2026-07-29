@@ -1,6 +1,5 @@
 import type { CategoryId, GameModeId, JetpunkRound, QcmQuestion } from "@/types/quiz";
 import timeAttackQuestionsData from "./time-attack-questions.json";
-import timeAttackQuestionsData from "./time-attack-questions.json";
 
 export type { QcmQuestion };
 
