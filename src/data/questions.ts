@@ -1,4 +1,5 @@
 import type { CategoryId, GameModeId, JetpunkRound, QcmQuestion } from "@/types/quiz";
+import timeAttackQuestionsData from "./time-attack-questions.json";
 
 export type { QcmQuestion };
 
@@ -482,6 +483,16 @@ export const QCM_QUESTIONS: QcmQuestion[] = [
   { id: "ta-hard-60", category: "culture-generale", question: "Quel métaux précieux a la plus haute densité ?", choices: ["Or", "Platine", "Rhodium", "Iridium"], answerIndex: 3, difficulty: 3, allowedModes: ["time-attack"] },
   { id: "ta-hard-61", category: "geographie", question: "Quel est le pays le plus ancien du monde ?", choices: ["Chine", "Égypte", "Éthiopie", "Grèce"], answerIndex: 2, difficulty: 3, allowedModes: ["time-attack"] },
   { id: "ta-hard-62", category: "sciences", question: "Quel zoologiste a décrit le plus d'espèces nouvelles ?", choices: ["Darwin", "Wallace", "Linnaeus", "Haeckel"], answerIndex: 2, difficulty: 3, allowedModes: ["time-attack"] },
+  // 3000 questions from Open Trivia DB and Trivia API
+  ...Object.values(timeAttackQuestionsData).flat().map(q => ({
+    id: q.id,
+    category: (q.category as CategoryId) || "culture-generale",
+    question: q.question,
+    choices: q.choices as [string, string, string, string],
+    answerIndex: q.answerIndex,
+    difficulty: q.difficulty as 1 | 2 | 3,
+    allowedModes: ["time-attack"] as GameModeId[],
+  })),
 ];
 
 
