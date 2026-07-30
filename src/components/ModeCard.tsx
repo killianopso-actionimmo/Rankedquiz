@@ -6,15 +6,24 @@ import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { revealItem } from "@/components/scroll/Reveal";
 import { TimeAttackLogo } from "@/components/logos/TimeAttackLogo";
+import { JetPunkLogo } from "@/components/logos/JetPunkLogo";
+import { ThematicLogo } from "@/components/logos/ThematicLogo";
+import { OneVsOneLogo } from "@/components/logos/OneVsOneLogo";
+import { RankedLogo } from "@/components/logos/RankedLogo";
 import { cn } from "@/lib/utils";
 import type { GameMode } from "@/types/quiz";
 
 /**
  * Modes dont le logo est un composant SVG anime au lieu d'un bitmap.
  * Le PNG correspondant dans /public/modes n'est alors plus charge.
+ * Le fallback <Image> reste en place pour tout mode ajoute sans logo SVG.
  */
 const SVG_LOGOS: Partial<Record<GameMode["id"], (p: { className?: string }) => React.ReactElement>> = {
   "time-attack": TimeAttackLogo,
+  jetpunk: JetPunkLogo,
+  thematique: ThematicLogo,
+  duel: OneVsOneLogo,
+  ranked: RankedLogo,
 };
 
 const ACCENT_STYLES = {
