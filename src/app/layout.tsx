@@ -3,6 +3,7 @@ import { Outfit, Inter } from "next/font/google";
 import { AmbientBackground } from "@/components/AmbientBackground";
 import { RouteTransition } from "@/components/RouteTransition";
 import { BadgeUnlockedToast } from "@/components/BadgeUnlockedToast";
+import { LenisScroll } from "@/components/LenisScroll";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -40,6 +41,7 @@ export default function RootLayout({
       className={`${outfit.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="app-bg relative min-h-full flex flex-col overflow-x-hidden font-sans text-foreground">
+        <LenisScroll />
         <AmbientBackground />
         <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col sm:border-x sm:border-black/[0.04]">
           <RouteTransition>{children}</RouteTransition>
