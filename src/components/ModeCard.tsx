@@ -5,8 +5,17 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { revealItem } from "@/components/scroll/Reveal";
+import { TimeAttackLogo } from "@/components/logos/TimeAttackLogo";
 import { cn } from "@/lib/utils";
 import type { GameMode } from "@/types/quiz";
+
+/**
+ * Modes dont le logo est un composant SVG anime au lieu d'un bitmap.
+ * Le PNG correspondant dans /public/modes n'est alors plus charge.
+ */
+const SVG_LOGOS: Partial<Record<GameMode["id"], (p: { className?: string }) => React.ReactElement>> = {
+  "time-attack": TimeAttackLogo,
+};
 
 const ACCENT_STYLES = {
   primary: {
@@ -31,6 +40,7 @@ const ACCENT_STYLES = {
 
 export function ModeCard({ mode }: { mode: GameMode }) {
   const accent = ACCENT_STYLES[mode.accent];
+  const SvgLogo = SVG_LOGOS[mode.id];
 
   return (
     <motion.div
@@ -64,13 +74,17 @@ export function ModeCard({ mode }: { mode: GameMode }) {
               accent.iconShadow
             )}
           >
-            <Image
-              src={mode.logo}
-              alt={mode.title}
-              fill
-              sizes="64px"
-              className="object-cover"
-            />
+            {SvgLogo ? (
+              <SvgLogo className="h-full w-full p-1.5" />
+            ) : (
+              <Image
+                src={mode.logo}
+                alt={mode.title}
+                fill
+                sizes="64px"
+                className="object-cover"
+              />
+            )}
           </div>
 
           <div className="min-w-0 flex-1 py-0.5 md:flex-none md:w-full">
