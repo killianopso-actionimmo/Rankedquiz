@@ -2,10 +2,8 @@
 
 import { HomeHeader } from "@/components/HomeHeader";
 import { DailyQuizBanner } from "@/components/DailyQuizBanner";
-import { PodiumWidget } from "@/components/PodiumWidget";
 import { ModeCard } from "@/components/ModeCard";
 import { Reveal, RevealGroup } from "@/components/scroll/Reveal";
-import { Parallax } from "@/components/scroll/Parallax";
 import { GAME_MODES } from "@/data/modes";
 
 export default function Home() {
@@ -16,12 +14,6 @@ export default function Home() {
       <Reveal className="px-4 sm:px-6" direction="up" distance={18}>
         <DailyQuizBanner />
       </Reveal>
-
-      <Parallax className="px-4 sm:px-6" speed={0.08} clamp={28}>
-        <Reveal direction="up" distance={22} amount={0.25}>
-          <PodiumWidget />
-        </Reveal>
-      </Parallax>
 
       <div className="px-4 sm:px-6">
         <Reveal direction="up" distance={16}>
