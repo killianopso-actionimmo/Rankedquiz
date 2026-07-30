@@ -7,15 +7,39 @@
   --foreground: #1b1f3b;
 }
 
-html,
-body {
+html {
   height: 100%;
 }
 
 body {
+  /* min-height plutot que height : le document doit pouvoir grandir pour que le
+     scroll natif (et donc Lenis) fonctionne. */
+  min-height: 100%;
   background: var(--background);
   color: var(--foreground);
   overscroll-behavior-y: none;
+}
+
+/* Lenis pilote le scroll : on neutralise le smooth scroll natif pour eviter que
+   les deux animations se combattent sur les ancres et les scrollTo. */
+html.lenis,
+html.lenis body {
+  scroll-behavior: auto !important;
+}
+
+/* Les ancres ne passent pas sous le header sticky. */
+[id] {
+  scroll-margin-top: 6rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 * {

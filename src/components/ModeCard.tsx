@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
+import { revealItem } from "@/components/scroll/Reveal";
 import { cn } from "@/lib/utils";
 import type { GameMode } from "@/types/quiz";
 
@@ -28,14 +29,13 @@ const ACCENT_STYLES = {
   },
 };
 
-export function ModeCard({ mode, index }: { mode: GameMode; index: number }) {
+export function ModeCard({ mode }: { mode: GameMode }) {
   const accent = ACCENT_STYLES[mode.accent];
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.4, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+      // L'apparition est pilotee par le <RevealGroup> parent (stagger au scroll).
+      variants={revealItem}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.97 }}
       className="h-full"

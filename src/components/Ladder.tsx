@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Trophy, Medal, ArrowLeft } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { Reveal } from "@/components/scroll/Reveal";
 import { useGlobalLadder, useModeLadder } from "@/services/ladder";
 import { GAME_MODES } from "@/data/modes";
 import type { GameModeId } from "@/types/quiz";
@@ -48,7 +49,7 @@ export function Ladder() {
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 sm:px-6 pb-10">
       {/* Header with Back Button */}
-      <div className="flex items-center justify-between gap-4">
+      <Reveal className="flex items-center justify-between gap-4" distance={14}>
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-primary hover:text-primary-dark transition-colors"
@@ -66,10 +67,10 @@ export function Ladder() {
               : `Classement ${getModeLabel(view as GameModeId)}`}
           </p>
         </div>
-      </div>
+      </Reveal>
 
       {/* Mode Selector */}
-      <div className="flex flex-wrap gap-2">
+      <Reveal className="flex flex-wrap gap-2" distance={14} delay={0.05}>
         <button
           onClick={() => setView("global")}
           className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
@@ -93,16 +94,19 @@ export function Ladder() {
             {mode.title}
           </button>
         ))}
-      </div>
+      </Reveal>
 
       {/* Ladder Table */}
-      <GlassCard className="overflow-hidden">
+      <Reveal distance={20} delay={0.1} amount={0.05}>
+        <GlassCard className="overflow-hidden">
         {entries.length === 0 ? (
           <div className="p-8 text-center text-ink-soft">
             Aucune partie jouée encore. Commence une partie pour te voir classé!
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          // data-lenis-prevent : le scroll horizontal du tableau reste natif,
+          // Lenis ne capture pas le geste.
+          <div className="overflow-x-auto" data-lenis-prevent>
             <table className="w-full">
               <thead>
                 <tr className="border-b border-ink-softer bg-background/50">
@@ -152,7 +156,8 @@ export function Ladder() {
             </table>
           </div>
         )}
-      </GlassCard>
+        </GlassCard>
+      </Reveal>
     </div>
   );
 }

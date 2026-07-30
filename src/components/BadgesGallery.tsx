@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
+import { Reveal, RevealGroup, revealItem } from "@/components/scroll/Reveal";
 import { ALL_BADGES, BADGE_CATEGORIES } from "@/lib/badges";
 import { useUnlockedBadges } from "@/lib/badgeStorage";
 import { BadgeCategory } from "@/types/badge";
@@ -25,7 +27,10 @@ export function BadgesGallery() {
   return (
     <div className="space-y-6">
       {/* Progress Bar */}
-      <div className="rounded-lg bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-4">
+      <Reveal
+        className="rounded-lg bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-4"
+        distance={16}
+      >
         <div className="mb-2 flex items-center justify-between">
           <h3 className="font-semibold text-ink">Badges Débloqués</h3>
           <span className="text-sm font-bold text-highlight">
@@ -38,10 +43,10 @@ export function BadgesGallery() {
             style={{ width: `${(unlockedCount / totalCount) * 100}%` }}
           />
         </div>
-      </div>
+      </Reveal>
 
       {/* Filters */}
-      <div className="space-y-3">
+      <Reveal className="space-y-3" distance={14} delay={0.05}>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setSelectedCategory("all")}
@@ -79,17 +84,23 @@ export function BadgesGallery() {
           />
           <span className="text-ink">Afficher les badges verrouillés</span>
         </label>
-      </div>
+      </Reveal>
 
       {/* Badges Grid */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <RevealGroup
+        key={`${selectedCategory}-${showLocked}`}
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+        stagger={0.03}
+        amount={0.02}
+      >
         {filteredBadges.map((badge) => {
           const isUnlocked = unlockedBadgeIds.includes(badge.id);
           const isHidden = badge.isHidden && !isUnlocked;
 
           return (
-            <div
+            <motion.div
               key={badge.id}
+              variants={revealItem}
               className={`group relative flex flex-col items-center gap-2 rounded-lg p-3 transition ${
                 isUnlocked
                   ? "bg-gradient-to-br from-yellow-400/20 to-orange-400/20 ring-1 ring-yellow-400/30"
@@ -121,10 +132,10 @@ export function BadgesGallery() {
                   ✓
                 </div>
               )}
-            </div>
+            </motion.div>
           );
         })}
-      </div>
+      </RevealGroup>
 
       {filteredBadges.length === 0 && (
         <div className="rounded-lg border-2 border-dashed border-ink-softer py-8 text-center">
