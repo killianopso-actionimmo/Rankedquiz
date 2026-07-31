@@ -49,6 +49,7 @@ export function connectChaosRoom(
   const supabase = createClient();
 
   if (supabase) {
+    console.log("[Chaos] Using Supabase Realtime for", code);
     const channel = supabase.channel(`chaos-${code}`, {
       config: { broadcast: { self: false } },
     });
@@ -58,17 +59,23 @@ export function connectChaosRoom(
     const pending: ChaosMessage[] = [];
 
     const push = (msg: ChaosMessage) => {
+      console.log("[Chaos] Sending via Supabase:", msg.t);
       void channel.send({ type: "broadcast", event: "chaos", payload: msg });
     };
 
     channel
       .on("broadcast", { event: "chaos" }, ({ payload }: { payload: ChaosMessage }) => {
+        console.log("[Chaos] Received from Supabase:", payload.t);
         onMessage(payload);
       })
       .subscribe((status: string) => {
-        if (status !== "SUBSCRIBED") return;
-        ready = true;
-        while (pending.length) push(pending.shift()!);
+        console.log("[Chaos] Supabase channel status:", status);
+        if (status === "SUBSCRIBED") {
+          ready = true;
+          while (pending.length) push(pending.shift()!);
+        } else if (status === "CHANNEL_ERROR") {
+          console.error("[Chaos] Supabase Realtime failed - check if it's enabled in Settings");
+        }
       });
 
     return {
@@ -79,6 +86,8 @@ export function connectChaosRoom(
       },
     };
   }
+
+  console.log("[Chaos] Supabase not configured, using BroadcastChannel (local only)");
 
   // ------------------------------------------------------------- fallback dev
   const bc = new BroadcastChannel(`chaos-${code}`);
