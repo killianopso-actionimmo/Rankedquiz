@@ -27,14 +27,22 @@ export function HomeHeader() {
   return (
     <header className="sticky top-0 z-40 bg-background flex flex-col gap-4 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-6">
       <style>{`
-        .hh-trophy { --t3d-h: 20px; }
-        .hh-badge { --b3d-d: 20px; }
-        .hh-flame { --f3d-h: 18px; }
+        /* Les pieces 3D redeclarent leur variable de taille sur leur propre racine
+           (.t3d, .b3d, .f3d). Poser la variable sur le parent n'a donc aucun effet :
+           il faut cibler la racine elle-meme pour battre sa declaration. */
+        .hh-trophy .t3d { --t3d-h: 24px; }
+        .hh-badge .b3d { --b3d-d: 20px; }
+        .hh-flame .f3d { --f3d-h: 22px; }
         @media (max-width: 640px) {
-          .hh-trophy { --t3d-h: 16px; }
-          .hh-badge { --b3d-d: 16px; }
-          .hh-flame { --f3d-h: 14px; }
+          .hh-trophy .t3d { --t3d-h: 20px; }
+          .hh-badge .b3d { --b3d-d: 17px; }
+          .hh-flame .f3d { --f3d-h: 18px; }
         }
+        /* Les flous sont en px dans les composants : a cette echelle ils noieraient
+           la forme, on les ramene a l'echelle de l'icone. */
+        .hh-flame .f3d-halo { filter: blur(1.5px); }
+        .hh-flame .f3d-sheen { filter: blur(.5px); }
+        .hh-badge .b3d-dome::after { filter: blur(.5px); }
       `}</style>
       {/* Top Row: Logo & Controls */}
       <div className="flex items-center justify-between">
