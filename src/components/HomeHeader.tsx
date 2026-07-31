@@ -3,8 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Flame, Trophy, Star } from "lucide-react";
 import { RankBadge } from "@/components/ui/RankBadge";
+import { Trophy3D } from "@/components/three-d/Trophy3D";
+import { Badge3D } from "@/components/three-d/Badge3D";
+import { Flame3D } from "@/components/three-d/Flame3D";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { getRankProgress } from "@/lib/ranks";
 import { useStoredElo, useStoredXp } from "@/lib/storage";
@@ -24,6 +26,16 @@ export function HomeHeader() {
 
   return (
     <header className="sticky top-0 z-40 bg-background flex flex-col gap-4 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-6">
+      <style>{`
+        .hh-trophy { --t3d-h: 36px; }
+        .hh-badge { --b3d-d: 36px; }
+        .hh-flame { --f3d-h: 32px; }
+        @media (max-width: 640px) {
+          .hh-trophy { --t3d-h: 28px; }
+          .hh-badge { --b3d-d: 28px; }
+          .hh-flame { --f3d-h: 24px; }
+        }
+      `}</style>
       {/* Top Row: Logo & Controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -34,34 +46,32 @@ export function HomeHeader() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 rounded-full border border-highlight/40 bg-highlight/10 px-3 py-1.5">
-            <Flame className="h-4 w-4 text-highlight-dark" />
-            <span className="font-display text-sm font-bold text-highlight-dark">{streak}</span>
-          </div>
-          <Link
-            href="/badges"
-            aria-label="Badges"
-            className="btn-tap rounded-full active:scale-95"
-          >
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-secondary/20 hover:bg-secondary/30 transition-colors">
-              <Star className="h-5 w-5 text-secondary-dark" />
-            </div>
-          </Link>
+        <div className="flex items-center gap-2">
           <Link
             href="/leaderboard"
-            aria-label="Classements"
-            className="btn-tap rounded-full active:scale-95"
+            aria-label="Classement"
+            className="btn-tap active:scale-95 t3d-g hh-trophy"
           >
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 hover:bg-primary/30 transition-colors">
-              <Trophy className="h-5 w-5 text-primary-dark" />
-            </div>
+            <Trophy3D />
           </Link>
+          <Link
+            href="/badges"
+            aria-label="Succès"
+            className="btn-tap active:scale-95 b3d-g hh-badge"
+          >
+            <Badge3D />
+          </Link>
+          <div className="flex items-center gap-1.5 rounded-full border border-highlight/40 bg-highlight/10 px-3 py-1.5 ml-1">
+            <div className="hh-flame">
+              <Flame3D />
+            </div>
+            <span className="font-display text-sm font-bold text-highlight-dark">{streak}</span>
+          </div>
           <button
             type="button"
             onClick={() => setAuthOpen(true)}
             aria-label="Mon profil"
-            className="btn-tap rounded-full active:scale-95"
+            className="btn-tap rounded-full active:scale-95 ml-1"
           >
             <RankBadge tier={rank.tier} label={rank.label} size="sm" />
           </button>
