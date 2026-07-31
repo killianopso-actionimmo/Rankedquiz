@@ -108,9 +108,12 @@ export function useChaosHost() {
     [commit],
   );
 
-  /** Cree le salon et ouvre le canal. Appele au choix du deck. */
+  /**
+   * Cree le salon et ouvre le canal, avec l'hote deja assis a la table : il
+   * joue comme les autres, son identite est donc choisie avant l'ouverture.
+   */
   const createRoom = useCallback(
-    (deck: ChaosDeck) => {
+    (deck: ChaosDeck, name: string, avatar: string) => {
       const code = generateRoomCode();
       const hostId = generatePlayerId();
       transportRef.current?.close();
@@ -123,8 +126,8 @@ export function useChaosHost() {
         players: [
           {
             id: hostId,
-            name: "Vous",
-            avatar: "av:0",
+            name: name.trim().slice(0, 14),
+            avatar,
             joinedAt: Date.now(),
           },
         ],

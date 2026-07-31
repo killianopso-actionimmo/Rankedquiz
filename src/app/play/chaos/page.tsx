@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Choice, Input } from "@/components/ui/Field";
 import { cn } from "@/components/ui/cn";
 import { ChaosAvatar } from "@/components/chaos/ChaosAvatar";
+import { IdentityForm } from "@/components/chaos/IdentityForm";
 import { ChaosLogo } from "@/components/logos/ChaosLogo";
 import { CHAOS_DECK_META, CHAOS_TOTAL_QUESTIONS } from "@/data/chaosQuestions";
 import { useChaosHost } from "@/hooks/useChaosHost";
@@ -37,6 +38,8 @@ export default function ChaosHostPage() {
   const { state, createRoom, setDrinks, start, skip, closeRoom } = useChaosHost();
   const [sharing, setSharing] = useState(false);
   const [joinCode, setJoinCode] = useState("");
+  // Deck choisi mais salon pas encore ouvert : l'hote remplit son identite.
+  const [pendingDeck, setPendingDeck] = useState<ChaosDeck | null>(null);
 
   // Le salon n'existe qu'apres un clic cote client : pas de rendu serveur ici,
   // `window.location` est donc lisible pendant le rendu.
@@ -44,6 +47,40 @@ export default function ChaosHostPage() {
 
   const asker = state ? chaosAsker(state) : null;
   const question = state?.queue[state.index] ?? null;
+
+  /* ------------------------------------------------- identite de l'hote */
+  if (!state && pendingDeck) {
+    const meta = CHAOS_DECK_META[pendingDeck];
+    return (
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-token-6 px-token-6 py-token-8">
+        <header className="flex flex-col items-center gap-token-1 text-center">
+          <ChaosLogo className="h-16 w-14" />
+          <h1 className="font-display text-2xl font-bold">QUIZ CHAOS</h1>
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+            {meta.label}
+          </p>
+          <p className="mt-token-2 text-sm text-ink-soft">
+            Tu joues aussi : choisis ta tete avant d&apos;ouvrir le salon.
+          </p>
+        </header>
+
+        <IdentityForm
+          initialName=""
+          initialAvatar="av:0"
+          submitLabel="Ouvrir le salon"
+          idPrefix="chaos-host"
+          onSubmit={(name, avatar) => createRoom(pendingDeck, name, avatar)}
+        />
+
+        <button
+          onClick={() => setPendingDeck(null)}
+          className="text-sm text-ink-soft underline-offset-4 hover:underline"
+        >
+          Changer de deck
+        </button>
+      </main>
+    );
+  }
 
   /* --------------------------------------------------------- choix du deck */
   if (!state) {
@@ -71,7 +108,7 @@ export default function ChaosHostPage() {
                 return (
                   <button
                     key={deck}
-                    onClick={() => createRoom(deck)}
+                    onClick={() => setPendingDeck(deck)}
                     className={cn(
                       "group flex flex-col gap-token-2 rounded-lg border border-line bg-background-card p-token-6 text-left",
                       "shadow-subtle transition-all duration-[var(--duration-base)] ease-token",

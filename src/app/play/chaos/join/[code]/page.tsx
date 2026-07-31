@@ -7,8 +7,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Beer, Check, Loader2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Field";
-import { AvatarPicker } from "@/components/chaos/AvatarPicker";
 import { ChaosAvatar } from "@/components/chaos/ChaosAvatar";
+import { IdentityForm } from "@/components/chaos/IdentityForm";
 import { ChaosLogo } from "@/components/logos/ChaosLogo";
 import { CHAOS_DECK_META } from "@/data/chaosQuestions";
 import { useChaosPlayer } from "@/hooks/useChaosPlayer";
@@ -81,6 +81,7 @@ export default function ChaosJoinPage() {
           key={identity?.id ?? "new"}
           initialName={name}
           initialAvatar={avatar}
+          submitLabel="Rejoindre"
           onSubmit={join}
         />
       </Shell>
@@ -237,48 +238,6 @@ export default function ChaosJoinPage() {
         )}
       </AnimatePresence>
     </Shell>
-  );
-}
-
-/** Prenom + tete. Le seul formulaire de tout le mode. */
-function IdentityForm({
-  initialName,
-  initialAvatar,
-  onSubmit,
-}: {
-  initialName: string;
-  initialAvatar: string;
-  onSubmit: (name: string, avatar: string) => void;
-}) {
-  const [name, setName] = useState(initialName);
-  const [avatar, setAvatar] = useState(initialAvatar);
-
-  return (
-    <form
-      className="flex w-full flex-col gap-token-6"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (name.trim()) onSubmit(name, avatar);
-      }}
-    >
-      <div className="flex flex-col">
-        <Label htmlFor="chaos-name">Ton prenom</Label>
-        <Input
-          id="chaos-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Tom"
-          maxLength={14}
-          autoFocus
-        />
-      </div>
-
-      <AvatarPicker value={avatar} onChange={setAvatar} />
-
-      <Button type="submit" size="lg" fullWidth disabled={!name.trim()}>
-        Rejoindre
-      </Button>
-    </form>
   );
 }
 
