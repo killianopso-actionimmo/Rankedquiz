@@ -45,4 +45,13 @@ export const GAME_MODES: GameMode[] = [
     badge: "E-SPORT",
     logo: "/modes/duel.png",
   },
+  {
+    id: "chaos",
+    title: "Quiz Chaos",
+    tagline: "Party game 2-8 joueurs, tout se joue a l'oral",
+    href: "/play/chaos",
+    accent: "highlight",
+    badge: "SOIREE",
+    logo: "/modes/chaos.png",
+  },
 ];

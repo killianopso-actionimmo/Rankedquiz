@@ -43,7 +43,8 @@ export type GameModeId =
   | "jetpunk"
   | "ranked"
   | "thematique"
-  | "duel";
+  | "duel"
+  | "chaos";
 
 export interface GameMode {
   id: GameModeId;

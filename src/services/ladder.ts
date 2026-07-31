@@ -14,6 +14,8 @@ const emptyModeLadders: { [key in GameModeId]: ModeLadder } = {
   ranked: { mode: "ranked", entries: [], lastUpdated: 0 },
   thematique: { mode: "thematique", entries: [], lastUpdated: 0 },
   duel: { mode: "duel", entries: [], lastUpdated: 0 },
+  // Quiz Chaos ne produit aucun score : ce ladder reste vide par construction.
+  chaos: { mode: "chaos", entries: [], lastUpdated: 0 },
 };
 
 function getStoredResults(): GameResult[] {

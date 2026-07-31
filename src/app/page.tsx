@@ -20,7 +20,7 @@ export default function Home() {
             Choisis ton mode
           </h2>
           <p className="text-sm leading-relaxed text-ink-soft">
-            Cinq façons de tester tes connaissances, seul ou en direct.
+            Six façons de tester tes connaissances : seul, en direct, ou entre potes.
           </p>
         </Reveal>
 

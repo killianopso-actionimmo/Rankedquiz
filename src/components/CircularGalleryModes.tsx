@@ -8,6 +8,7 @@ import { JetPunkLogo } from "@/components/logos/JetPunkLogo";
 import { ThematicLogo } from "@/components/logos/ThematicLogo";
 import { OneVsOneLogo } from "@/components/logos/OneVsOneLogo";
 import { RankedLogo } from "@/components/logos/RankedLogo";
+import { ChaosLogo } from "@/components/logos/ChaosLogo";
 import { GAME_MODES } from "@/data/modes";
 import type { GameMode } from "@/types/quiz";
 
@@ -17,6 +18,7 @@ const LOGOS: Record<GameMode["id"], (p: { className?: string }) => React.ReactEl
   thematique: ThematicLogo,
   duel: OneVsOneLogo,
   ranked: RankedLogo,
+  chaos: ChaosLogo,
 };
 
 /**
