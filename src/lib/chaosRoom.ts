@@ -47,48 +47,36 @@ export function connectChaosRoom(
   onMessage: (msg: ChaosMessage) => void,
 ): ChaosTransport {
   const supabase = createClient();
-  let bcFallback: BroadcastChannel | null = null;
 
   if (supabase) {
-    console.log("[Chaos] Attempting Supabase Realtime for", code);
     const channel = supabase.channel(`chaos-${code}`, {
       config: { broadcast: { self: false } },
     });
 
+    // Les messages emis avant SUBSCRIBED seraient perdus : on les met en file.
     let ready = false;
     const pending: ChaosMessage[] = [];
 
     const push = (msg: ChaosMessage) => {
-      if (bcFallback) {
-        bcFallback.postMessage(msg);
-      } else {
-        console.log("[Chaos] Sending via Supabase:", msg.t);
-        void channel.send({ type: "broadcast", event: "chaos", payload: msg });
-      }
+      void channel.send({ type: "broadcast", event: "chaos", payload: msg });
     };
 
     channel
       .on("broadcast", { event: "chaos" }, ({ payload }: { payload: ChaosMessage }) => {
-        console.log("[Chaos] Received from Supabase:", payload.t);
         onMessage(payload);
       })
       .subscribe((status: string) => {
-        console.log("[Chaos] Supabase channel status:", status);
         if (status === "SUBSCRIBED") {
           ready = true;
-          console.log("[Chaos] ✓ Supabase Realtime connected!");
           while (pending.length) push(pending.shift()!);
-        } else if (status === "CHANNEL_ERROR" || status === "CLOSED") {
-          console.log("[Chaos] Supabase failed, activating BroadcastChannel fallback...");
-          void supabase.removeChannel(channel);
-          bcFallback = new BroadcastChannel(`chaos-${code}`);
-          console.log("[Chaos] ✓ BroadcastChannel active (local mode)");
-          bcFallback.onmessage = (e) => onMessage(e.data as ChaosMessage);
-          ready = true;
-          while (pending.length) {
-            const msg = pending.shift();
-            if (msg) bcFallback.postMessage(msg);
-          }
+          return;
+        }
+        // Un salon multi-appareils sans Realtime n'existe pas : mieux vaut le
+        // dire fort que de retomber en silence sur un canal local.
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.error(
+            `[Chaos] Realtime injoignable (${status}). Verifie NEXT_PUBLIC_SUPABASE_URL / _ANON_KEY.`,
+          );
         }
       });
 
@@ -96,13 +84,10 @@ export function connectChaosRoom(
       kind: "supabase",
       send: (msg) => (ready ? push(msg) : pending.push(msg)),
       close: () => {
-        if (bcFallback) bcFallback.close();
         void supabase.removeChannel(channel);
       },
     };
   }
-
-  console.log("[Chaos] Supabase not configured, using BroadcastChannel (local only)");
 
   // ------------------------------------------------------------- fallback dev
   const bc = new BroadcastChannel(`chaos-${code}`);
