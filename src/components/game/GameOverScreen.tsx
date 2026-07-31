@@ -211,7 +211,7 @@ export function GameOverScreen({
           transition={{ duration: 0.4 }}
           className="mt-8 flex flex-col gap-3"
         >
-          <NeonButton variant="secondary" size="lg" className="w-full" onClick={onRetry}>
+          <NeonButton variant="primary" size="lg" className="w-full" onClick={onRetry}>
             <RotateCcw className="h-5 w-5" />
             Rejouer
           </NeonButton>

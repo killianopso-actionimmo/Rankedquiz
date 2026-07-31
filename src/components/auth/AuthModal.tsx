@@ -81,7 +81,7 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
             exit={{ opacity: 0, y: 40, scale: 0.96 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-sm rounded-t-3xl border border-black/[0.05] bg-white p-6 shadow-card-hover sm:rounded-3xl"
+            className="relative w-full max-w-sm rounded-t-3xl border border-line bg-background-card p-6 shadow-strong sm:rounded-3xl"
           >
             <div className="mb-5 flex items-center justify-between">
               <h2 className="font-display text-xl font-extrabold leading-snug text-ink">
@@ -91,19 +91,19 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
                 type="button"
                 onClick={onClose}
                 aria-label="Fermer"
-                className="btn-tap flex h-9 w-9 items-center justify-center rounded-full border border-black/[0.06] bg-background text-ink-soft active:scale-95"
+                className="btn-tap flex h-9 w-9 items-center justify-center rounded-full border border-line bg-background-sunken text-ink-soft hover:border-primary active:scale-95"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="mb-5 flex rounded-full border border-black/[0.06] bg-background p-1">
+            <div className="mb-5 flex rounded-full border border-line bg-background-sunken p-1">
               <button
                 type="button"
                 onClick={() => setMode("profile")}
                 className={cn(
                   "flex-1 rounded-full py-2 text-sm font-semibold transition-colors",
-                  mode === "profile" ? "bg-secondary text-white shadow-btn-secondary" : "text-ink-soft"
+                  mode === "profile" ? "bg-primary text-ink-accent shadow-subtle" : "text-ink-soft"
                 )}
               >
                 Profil
@@ -113,7 +113,7 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
                 onClick={() => setMode("login")}
                 className={cn(
                   "flex-1 rounded-full py-2 text-sm font-semibold transition-colors",
-                  mode === "login" ? "bg-secondary text-white shadow-btn-secondary" : "text-ink-soft"
+                  mode === "login" ? "bg-primary text-ink-accent shadow-subtle" : "text-ink-soft"
                 )}
               >
                 Connexion
@@ -123,7 +123,7 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
                 onClick={() => setMode("signup")}
                 className={cn(
                   "flex-1 rounded-full py-2 text-sm font-semibold transition-colors",
-                  mode === "signup" ? "bg-secondary text-white shadow-btn-secondary" : "text-ink-soft"
+                  mode === "signup" ? "bg-primary text-ink-accent shadow-subtle" : "text-ink-soft"
                 )}
               >
                 Inscription
@@ -135,7 +135,7 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
                 e.preventDefault();
                 handleSaveName();
               }}>
-                <label className="flex items-center gap-3 rounded-xl border border-black/[0.08] bg-background px-4 py-3">
+                <label className="flex items-center gap-3 rounded-sm border border-line bg-background-sunken px-4 py-3 focus-within:border-primary">
                   <User className="h-4 w-4 shrink-0 text-ink-faint" />
                   <input
                     type="text"
@@ -149,13 +149,13 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
                 {user && (
                   <p className="text-xs text-ink-faint">Connecté en tant que {user.email}</p>
                 )}
-                <NeonButton type="submit" variant="secondary" size="lg" className="mt-2 w-full">
+                <NeonButton type="submit" variant="primary" size="lg" className="mt-2 w-full">
                   Enregistrer
                 </NeonButton>
                 {user && (
                   <NeonButton
                     type="button"
-                    variant="secondary"
+                    variant="primary"
                     size="lg"
                     className="mt-2 w-full"
                     onClick={handleSignOut}
@@ -168,7 +168,7 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
             ) : (
               <form className="flex flex-col gap-3" onSubmit={mode === "signup" ? handleSignUp : handleSignIn}>
                 {mode === "signup" && (
-                  <label className="flex items-center gap-3 rounded-xl border border-black/[0.08] bg-background px-4 py-3">
+                  <label className="flex items-center gap-3 rounded-sm border border-line bg-background-sunken px-4 py-3 focus-within:border-primary">
                     <User className="h-4 w-4 shrink-0 text-ink-faint" />
                     <input
                       type="text"
@@ -180,7 +180,7 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
                     />
                   </label>
                 )}
-                <label className="flex items-center gap-3 rounded-xl border border-black/[0.08] bg-background px-4 py-3">
+                <label className="flex items-center gap-3 rounded-sm border border-line bg-background-sunken px-4 py-3 focus-within:border-primary">
                   <Mail className="h-4 w-4 shrink-0 text-ink-faint" />
                   <input
                     type="email"
@@ -191,7 +191,7 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
                     className="w-full bg-transparent text-sm text-ink placeholder:text-ink-faint focus:outline-none"
                   />
                 </label>
-                <label className="flex items-center gap-3 rounded-xl border border-black/[0.08] bg-background px-4 py-3">
+                <label className="flex items-center gap-3 rounded-sm border border-line bg-background-sunken px-4 py-3 focus-within:border-primary">
                   <Lock className="h-4 w-4 shrink-0 text-ink-faint" />
                   <input
                     type="password"
@@ -205,7 +205,7 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
 
                 {error && <p className="text-xs text-danger">{error}</p>}
 
-                <NeonButton type="submit" variant="secondary" size="lg" className="mt-2 w-full" disabled={loading}>
+                <NeonButton type="submit" variant="primary" size="lg" className="mt-2 w-full" disabled={loading}>
                   {loading ? "Chargement..." : mode === "login" ? "Se connecter" : "Créer mon compte"}
                 </NeonButton>
               </form>

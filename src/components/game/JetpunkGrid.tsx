@@ -30,7 +30,7 @@ export function JetpunkGrid({ items, foundIds, revealed }: JetpunkGridProps) {
                 ? "border-success/50 bg-success-bg"
                 : revealed
                   ? "border-danger/40 bg-danger-bg"
-                  : "border-black/[0.06] bg-white"
+                  : "border-line bg-background-sunken"
             )}
           >
             {showAnswer ? (

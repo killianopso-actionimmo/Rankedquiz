@@ -1,0 +1,128 @@
+/* ============================================================================
+   RANKED QUIZ — DESIGN TOKENS
+   ----------------------------------------------------------------------------
+   Source unique de verite pour TOUTES les couleurs, espacements, rayons,
+   ombres et graisses du site.
+   Regle absolue : aucune couleur hardcodee ailleurs que dans ce fichier.
+
+   Chaque couleur est declaree deux fois :
+     --c-*      : canaux RGB bruts "R G B"  -> consommes par Tailwind, permet
+                  les modificateurs d'opacite (bg-primary/25, border-ink/10...)
+     --color-*  : couleur CSS prete a l'emploi -> pour le CSS custom / inline
+   ============================================================================ */
+
+:root {
+  /* ---------------------------------------------------------------- PRIMAIRE
+     Vanilla : accents doux, highlights, fonds chaleureux */
+  --c-vanilla: 241 254 200; /* #F1FEC8 */
+  --c-vanilla-dark: 212 232 155; /* #D4E89B */
+
+  /* ------------------------------------------------------------- INTERACTIF
+     Cyan : boutons principaux, call-to-action, focus, selection */
+  --c-cyan: 0 255 255; /* #00FFFF */
+  --c-cyan-dark: 0 204 204; /* #00CCCC */
+
+  /* ----------------------------------------------------------- STATUTS QUIZ */
+  --c-success: 81 207 102; /* #51CF66  bonne reponse */
+  --c-danger: 255 107 107; /* #FF6B6B  mauvaise reponse */
+  --c-info: 107 163 255; /* #6BA3FF  neutre / information */
+  --c-highlight: 255 217 61; /* #FFD93D  attention / focus */
+  --c-flame: 255 138 0; /* #FF8A00  streak / flamme (derive danger->highlight) */
+
+  /* ---------------------------------------------------------------- NEUTRES */
+  --c-ink: 26 26 26; /* #1A1A1A  texte principal */
+  /* Texte pose SUR un fond accent (cyan, vanilla, success, danger, highlight).
+     Ces fonds sont clairs dans les DEUX themes : ce token ne bascule jamais. */
+  --c-on-accent: 26 26 26; /* #1A1A1A */
+  --c-ink-soft: 102 102 102; /* #666666  texte secondaire */
+  --c-ink-faint: 154 154 154; /* #9A9A9A  texte tertiaire / placeholder */
+  --c-white: 255 255 255; /* #FFFFFF  surface */
+  --c-alt: 249 250 251; /* #F9FAFB  background alternatif */
+  --c-border: 224 224 224; /* #E0E0E0  bordures */
+
+  /* ------------------------------------------------------------------ DARK */
+  --c-dark-bg: 15 15 15; /* #0F0F0F */
+  --c-dark-surface: 26 26 26; /* #1A1A1A */
+  --c-dark-border: 51 51 51; /* #333333 */
+  --c-dark-text: 232 232 232; /* #E8E8E8 */
+
+  /* ------------------------------------------------------------------ RANGS */
+  --c-bronze: 205 127 50; /* #CD7F32 */
+  --c-silver: 148 163 184; /* #94A3B8 */
+  --c-gold: 255 217 61; /* = highlight */
+  --c-diamond: 0 255 255; /* = cyan */
+
+  /* =============================== ALIASES CSS prets a l'emploi ============ */
+  --color-vanilla: rgb(var(--c-vanilla));
+  --color-vanilla-dark: rgb(var(--c-vanilla-dark));
+  --color-primary: rgb(var(--c-cyan));
+  --color-primary-dark: rgb(var(--c-cyan-dark));
+  --color-success: rgb(var(--c-success));
+  --color-danger: rgb(var(--c-danger));
+  --color-info: rgb(var(--c-info));
+  --color-highlight: rgb(var(--c-highlight));
+  --color-flame: rgb(var(--c-flame));
+  --color-text: rgb(var(--c-ink));
+  --color-text-soft: rgb(var(--c-ink-soft));
+  --color-border: rgb(var(--c-border));
+
+  /* =============================== SEMANTIQUE DE SURFACE ==================
+     Ces 5 variables basculent en dark mode (voir .dark plus bas).
+     Utilise-les partout plutot que les couleurs brutes.                     */
+  --surface-page: var(--c-alt); /* fond de page */
+  --surface-card: var(--c-white); /* fond de carte / surface elevee */
+  --surface-sunken: var(--c-alt); /* zones creusees (inputs, listes) */
+  --surface-text: var(--c-ink); /* texte principal */
+  --surface-text-soft: var(--c-ink-soft); /* texte secondaire */
+  --surface-border: var(--c-border); /* bordures */
+
+  /* ==================================== SPACING (base 4px) ================ */
+  --space-1: 0.25rem; /*  4px */
+  --space-2: 0.5rem; /*  8px */
+  --space-4: 1rem; /* 16px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+
+  /* ==================================== TYPOGRAPHIE ======================= */
+  --font-regular: 400;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* ==================================== RAYONS =========================== */
+  --radius-sm: 0.5rem; /*  8px  — inputs, petits badges */
+  --radius-md: 0.875rem; /* 14px  — boutons, tags */
+  --radius-lg: 1.25rem; /* 20px  — cartes, modales */
+  --radius-full: 9999px;
+
+  /* ==================================== OMBRES =========================== */
+  --shadow-subtle: 0 1px 2px rgb(var(--c-ink) / 0.04), 0 2px 8px rgb(var(--c-ink) / 0.05);
+  --shadow-medium: 0 2px 4px rgb(var(--c-ink) / 0.05), 0 8px 22px rgb(var(--c-ink) / 0.09);
+  --shadow-strong: 0 4px 8px rgb(var(--c-ink) / 0.07), 0 18px 40px rgb(var(--c-ink) / 0.14);
+  --shadow-focus: 0 0 0 2px rgb(var(--c-cyan));
+  --glow-cyan: 0 0 0 3px rgb(var(--c-cyan) / 0.25), 0 6px 18px rgb(var(--c-cyan) / 0.28);
+  --glow-success: 0 0 0 3px rgb(var(--c-success) / 0.25), 0 6px 18px rgb(var(--c-success) / 0.24);
+  --glow-danger: 0 0 0 3px rgb(var(--c-danger) / 0.25), 0 6px 18px rgb(var(--c-danger) / 0.24);
+
+  /* ==================================== TRANSITIONS ====================== */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+}
+
+/* ============================================================================
+   DARK MODE — seules les variables de surface basculent.
+   La palette d'accents (cyan, vanilla, success, danger...) reste identique :
+   c'est ce qui garantit la coherence entre les deux themes.
+   ============================================================================ */
+.dark {
+  --surface-page: var(--c-dark-bg);
+  --surface-card: var(--c-dark-surface);
+  --surface-sunken: var(--c-dark-bg);
+  --surface-text: var(--c-dark-text);
+  --surface-text-soft: 160 160 160;
+  --surface-border: var(--c-dark-border);
+
+  --shadow-subtle: 0 1px 2px rgb(0 0 0 / 0.4), 0 2px 8px rgb(0 0 0 / 0.35);
+  --shadow-medium: 0 2px 4px rgb(0 0 0 / 0.45), 0 8px 22px rgb(0 0 0 / 0.45);
+  --shadow-strong: 0 4px 8px rgb(0 0 0 / 0.5), 0 18px 40px rgb(0 0 0 / 0.6);
+}

@@ -1,5 +1,15 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * Toutes les valeurs pointent sur les CSS variables definies dans
+ * `src/app/tokens.css`. Zero couleur hardcodee ici : pour changer la palette,
+ * on ne touche QUE tokens.css.
+ *
+ * Le format `rgb(var(--c-x) / <alpha-value>)` conserve les modificateurs
+ * d'opacite Tailwind (ex: `bg-primary/25`, `border-ink/10`).
+ */
+const c = (v: string) => `rgb(var(${v}) / <alpha-value>)`;
+
 const config: Config = {
   darkMode: "class",
   content: [
@@ -10,74 +20,150 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        /* ---------- Surfaces (basculent en dark mode) ---------- */
         background: {
-          DEFAULT: "#F4F5FA",
-          deep: "#171B2E",
-          card: "#FFFFFF",
+          DEFAULT: c("--surface-page"),
+          card: c("--surface-card"),
+          sunken: c("--surface-sunken"),
+          deep: c("--c-dark-bg"),
+          alt: c("--c-alt"),
         },
+        surface: {
+          DEFAULT: c("--surface-card"),
+          border: c("--surface-border"),
+        },
+
+        /* ---------- Texte ---------- */
         ink: {
-          DEFAULT: "#1B1F3B",
-          soft: "#6B7280",
-          faint: "#9CA3AF",
+          DEFAULT: c("--surface-text"),
+          soft: c("--surface-text-soft"),
+          faint: c("--c-ink-faint"),
+          invert: c("--c-dark-text"),
+          /** Texte sur fond accent — ne bascule jamais en dark mode. */
+          accent: c("--c-on-accent"),
         },
+
+        /* ---------- Interactif : cyan ---------- */
         primary: {
-          DEFAULT: "#0047AB",
-          light: "#2E6BE6",
-          dark: "#003380",
+          DEFAULT: c("--c-cyan"),
+          light: c("--c-cyan"),
+          dark: c("--c-cyan-dark"),
         },
+
+        /* ---------- Alternatif : vanilla ---------- */
         secondary: {
-          DEFAULT: "#FF1493",
-          light: "#FF57B0",
-          dark: "#C10E70",
+          DEFAULT: c("--c-vanilla"),
+          light: c("--c-vanilla"),
+          dark: c("--c-vanilla-dark"),
         },
-        highlight: {
-          DEFAULT: "#FFBC00",
-          light: "#FFD666",
-          dark: "#CC9600",
+        vanilla: {
+          DEFAULT: c("--c-vanilla"),
+          dark: c("--c-vanilla-dark"),
         },
+
+        /* ---------- Statuts ---------- */
         success: {
-          DEFAULT: "#22C55E",
-          light: "#4ADE80",
-          dark: "#16A34A",
-          bg: "#DCFCE7",
+          DEFAULT: c("--c-success"),
+          light: c("--c-success"),
+          dark: c("--c-success"),
+          bg: "rgb(var(--c-success) / 0.14)",
         },
         danger: {
-          DEFAULT: "#EF4444",
-          light: "#F87171",
-          dark: "#DC2626",
-          bg: "#FEE2E2",
+          DEFAULT: c("--c-danger"),
+          light: c("--c-danger"),
+          dark: c("--c-danger"),
+          bg: "rgb(var(--c-danger) / 0.14)",
         },
+        info: {
+          DEFAULT: c("--c-info"),
+          bg: "rgb(var(--c-info) / 0.14)",
+        },
+        highlight: {
+          DEFAULT: c("--c-highlight"),
+          light: c("--c-highlight"),
+          dark: c("--c-highlight"),
+        },
+        flame: {
+          DEFAULT: c("--c-flame"),
+        },
+
+        /* ---------- Bordure ---------- */
+        line: c("--surface-border"),
+
+        /* ---------- Rangs / badges ---------- */
         rank: {
-          bronze: "#CD7F32",
-          silver: "#94A3B8",
-          gold: "#FFBC00",
-          diamond: "#00B8D9",
+          bronze: c("--c-bronze"),
+          silver: c("--c-silver"),
+          gold: c("--c-gold"),
+          diamond: c("--c-diamond"),
         },
       },
+
       fontFamily: {
         display: ["var(--font-outfit)", "sans-serif"],
         sans: ["var(--font-inter)", "sans-serif"],
       },
-      backgroundImage: {
-        "duel-gradient": "linear-gradient(135deg, #0047AB 0%, #1A227E 50%, #FF1493 100%)",
-        "gold-gradient": "linear-gradient(135deg, #FFBC00 0%, #FF8A00 100%)",
-        "daily-gradient": "linear-gradient(135deg, #FFBC00 0%, #FF8A00 45%, #FF1493 100%)",
+
+      fontWeight: {
+        regular: "var(--font-regular)",
+        semibold: "var(--font-semibold)",
+        bold: "var(--font-bold)",
       },
-      boxShadow: {
-        card: "0 1px 2px rgba(27,31,59,0.04), 0 2px 10px rgba(27,31,59,0.06)",
-        "card-hover": "0 2px 4px rgba(27,31,59,0.05), 0 10px 24px rgba(27,31,59,0.10)",
-        "btn-primary": "0 4px 0 0 #003380",
-        "btn-secondary": "0 4px 0 0 #C10E70",
-        "btn-highlight": "0 4px 0 0 #CC9600",
-        "btn-success": "0 4px 0 0 #16A34A",
-        "btn-ghost": "0 4px 0 0 #D8DAE8",
-        "neon-blue": "0 0 8px rgba(0,71,171,0.6), 0 0 24px rgba(0,71,171,0.35)",
-        "neon-magenta": "0 0 8px rgba(255,20,147,0.6), 0 0 24px rgba(255,20,147,0.35)",
-        "neon-gold": "0 0 8px rgba(255,188,0,0.6), 0 0 24px rgba(255,188,0,0.35)",
+
+      spacing: {
+        "token-1": "var(--space-1)",
+        "token-2": "var(--space-2)",
+        "token-4": "var(--space-4)",
+        "token-6": "var(--space-6)",
+        "token-8": "var(--space-8)",
       },
+
       borderRadius: {
-        xl2: "1.25rem",
+        sm: "var(--radius-sm)",
+        md: "var(--radius-md)",
+        lg: "var(--radius-lg)",
+        xl2: "var(--radius-lg)",
       },
+
+      boxShadow: {
+        subtle: "var(--shadow-subtle)",
+        medium: "var(--shadow-medium)",
+        strong: "var(--shadow-strong)",
+        card: "var(--shadow-subtle)",
+        "card-hover": "var(--shadow-medium)",
+        "glow-cyan": "var(--glow-cyan)",
+        "glow-success": "var(--glow-success)",
+        "glow-danger": "var(--glow-danger)",
+        /* Ombres "3D" sous les boutons */
+        "btn-primary": "0 4px 0 0 rgb(var(--c-cyan-dark))",
+        "btn-secondary": "0 4px 0 0 rgb(var(--c-vanilla-dark))",
+        "btn-success": "0 4px 0 0 rgb(var(--c-success) / 0.55)",
+        "btn-danger": "0 4px 0 0 rgb(var(--c-danger) / 0.55)",
+        "btn-highlight": "0 4px 0 0 rgb(var(--c-highlight) / 0.55)",
+        "btn-ghost": "0 4px 0 0 rgb(var(--surface-border))",
+        /* Legacy — conserves pour ne rien casser */
+        "neon-blue": "var(--glow-cyan)",
+        "neon-magenta": "0 0 0 3px rgb(var(--c-vanilla-dark) / 0.35)",
+        "neon-gold": "0 0 0 3px rgb(var(--c-highlight) / 0.35)",
+      },
+
+      backgroundImage: {
+        /* Gradient signature : vanilla -> cyan */
+        "quiz-gradient": "linear-gradient(90deg, rgb(var(--c-vanilla)) 0%, rgb(var(--c-cyan)) 100%)",
+        "duel-gradient":
+          "linear-gradient(135deg, rgb(var(--c-cyan)) 0%, rgb(var(--c-vanilla)) 60%, rgb(var(--c-highlight)) 100%)",
+        "gold-gradient":
+          "linear-gradient(135deg, rgb(var(--c-highlight)) 0%, rgb(var(--c-flame)) 100%)",
+        "daily-gradient":
+          "linear-gradient(135deg, rgb(var(--c-vanilla)) 0%, rgb(var(--c-highlight)) 50%, rgb(var(--c-flame)) 100%)",
+        "flame-gradient":
+          "linear-gradient(135deg, rgb(var(--c-highlight)) 0%, rgb(var(--c-flame)) 55%, rgb(var(--c-danger)) 100%)",
+      },
+
+      transitionTimingFunction: {
+        token: "var(--ease-out)",
+      },
+
       keyframes: {
         "pulse-glow": {
           "0%, 100%": { opacity: "1", filter: "brightness(1)" },
@@ -113,7 +199,13 @@ const config: Config = {
           "60%": { transform: "scale(1.08)", opacity: "1" },
           "100%": { transform: "scale(1)", opacity: "1" },
         },
+        /* Loading discret : pas d'overkill */
+        "skeleton-sweep": {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
       },
+
       animation: {
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "float-y": "float-y 3s ease-in-out infinite",
@@ -123,6 +215,7 @@ const config: Config = {
         "fade-in-up": "fade-in-up 0.6s ease both",
         breath: "breath 15s ease-in-out infinite",
         pop: "pop 0.4s cubic-bezier(.22,1.6,.36,1) both",
+        "skeleton-sweep": "skeleton-sweep 1.6s ease-in-out infinite",
       },
     },
   },

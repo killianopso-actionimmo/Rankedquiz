@@ -152,7 +152,7 @@ export default function JetpunkPage() {
       </div>
 
       {!finished && (
-        <div className="sticky bottom-0 flex flex-col gap-3 border-t border-black/5 bg-background px-4 py-4 sm:px-6 sm:py-5">
+        <div className="sticky bottom-0 flex flex-col gap-3 border-t border-line bg-background-card px-4 py-4 sm:px-6 sm:py-5">
           <TimerBar secondsLeft={secondsLeft} maxSeconds={round.timeLimitSeconds} />
           <input
             ref={inputRef}
@@ -188,12 +188,12 @@ export default function JetpunkPage() {
       )}
 
       {finished && (
-        <div className="sticky bottom-0 border-t border-black/5 bg-background px-4 py-4 sm:px-6 sm:py-5">
+        <div className="sticky bottom-0 border-t border-line bg-background-card px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex gap-3">
             <button
               type="button"
               onClick={() => startRound(round)}
-              className="flex-1 px-4 py-3 bg-primary text-white rounded-lg font-semibold"
+              className="flex-1 px-4 py-3 bg-primary text-ink-accent rounded-md font-semibold shadow-btn-primary"
             >
               Recommencer
             </button>

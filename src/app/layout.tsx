@@ -29,7 +29,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#F4F5FA",
+  themeColor: "#F9FAFB",
 };
 
 export default function RootLayout({
@@ -46,7 +46,7 @@ export default function RootLayout({
         <SmoothScroll>
           <ScrollProgress />
           <AmbientBackground />
-          <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col sm:border-x sm:border-black/[0.04]">
+          <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col sm:border-x sm:border-line">
             <RouteTransition>{children}</RouteTransition>
           </div>
           <BadgeUnlockedToast />

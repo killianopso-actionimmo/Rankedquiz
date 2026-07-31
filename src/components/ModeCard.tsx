@@ -26,24 +26,26 @@ const SVG_LOGOS: Partial<Record<GameMode["id"], (p: { className?: string }) => R
   ranked: RankedLogo,
 };
 
+/* Bordure vanilla dark au repos, glow cyan au survol : meme grammaire que la
+   galerie circulaire et que les boutons de reponse. */
 const ACCENT_STYLES = {
   primary: {
-    border: "border-black/[0.05]",
-    hoverBorder: "group-hover:border-primary/40",
-    hoverShadow: "group-hover:shadow-[0_10px_28px_rgba(0,71,171,0.16)]",
-    iconShadow: "shadow-[0_6px_16px_rgba(0,71,171,0.28)]",
+    border: "border-vanilla-dark",
+    hoverBorder: "group-hover:border-primary",
+    hoverShadow: "group-hover:shadow-glow-cyan",
+    iconShadow: "shadow-[0_6px_16px_rgb(var(--c-cyan)/0.30)]",
   },
   secondary: {
-    border: "border-black/[0.05]",
-    hoverBorder: "group-hover:border-secondary/40",
-    hoverShadow: "group-hover:shadow-[0_10px_28px_rgba(255,20,147,0.16)]",
-    iconShadow: "shadow-[0_6px_16px_rgba(255,20,147,0.28)]",
+    border: "border-vanilla-dark",
+    hoverBorder: "group-hover:border-primary",
+    hoverShadow: "group-hover:shadow-glow-cyan",
+    iconShadow: "shadow-[0_6px_16px_rgb(var(--c-vanilla-dark)/0.55)]",
   },
   highlight: {
-    border: "border-black/[0.05]",
-    hoverBorder: "group-hover:border-highlight/50",
-    hoverShadow: "group-hover:shadow-[0_10px_28px_rgba(255,188,0,0.20)]",
-    iconShadow: "shadow-[0_6px_16px_rgba(255,188,0,0.30)]",
+    border: "border-vanilla-dark",
+    hoverBorder: "group-hover:border-highlight",
+    hoverShadow: "group-hover:shadow-[0_10px_28px_rgb(var(--c-highlight)/0.30)]",
+    iconShadow: "shadow-[0_6px_16px_rgb(var(--c-highlight)/0.35)]",
   },
 };
 
@@ -62,10 +64,10 @@ export function ModeCard({ mode }: { mode: GameMode }) {
       <Link href={mode.href} className="block h-full">
         <div
           className={cn(
-            "group relative flex h-full items-center gap-4 rounded-xl2 border bg-white p-5 shadow-card transition-shadow duration-300",
+            "group relative flex h-full items-center gap-4 rounded-xl2 border bg-background-card p-5 shadow-subtle transition-shadow duration-300",
             "md:flex-col md:justify-center md:gap-3 md:p-6 md:text-center",
             mode.premium
-              ? "border-2 border-highlight/60 bg-gradient-to-br from-highlight/10 via-white to-white shadow-[0_10px_28px_rgba(255,188,0,0.20)]"
+              ? "border-2 border-highlight bg-gradient-to-br from-highlight/15 via-background-card to-background-card shadow-[0_10px_28px_rgb(var(--c-highlight)/0.28)]"
               : accent.border,
             accent.hoverBorder,
             accent.hoverShadow
@@ -79,7 +81,7 @@ export function ModeCard({ mode }: { mode: GameMode }) {
 
           <div
             className={cn(
-              "relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-background transition-transform duration-300 group-hover:scale-110 md:h-16 md:w-16",
+              "relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-background-sunken transition-transform duration-300 group-hover:scale-110 md:h-16 md:w-16",
               accent.iconShadow
             )}
           >

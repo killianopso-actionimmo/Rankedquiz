@@ -19,11 +19,22 @@ const LOGOS: Record<GameMode["id"], (p: { className?: string }) => React.ReactEl
   ranked: RankedLogo,
 };
 
-/** Teinte de la lueur / du liseré, par accent de mode. */
+/**
+ * Teinte de la lueur / du liseré.
+ *
+ * Volontairement identique pour les cinq modes : le liseré prolonge le dégradé
+ * intérieur de la carte (blanc -> vanilla), il n'a pas à varier d'un mode à
+ * l'autre. `mode.accent` reste utilisé ailleurs (ModeCard), il n'est simplement
+ * plus discriminant ici.
+ */
+const RING = {
+  glow: "rgb(var(--c-vanilla-dark) / .55)",
+  ring: "rgb(var(--c-vanilla-dark))",
+};
 const ACCENT: Record<GameMode["accent"], { glow: string; ring: string }> = {
-  primary: { glow: "rgba(0,71,171,.26)", ring: "rgba(0,71,171,.45)" },
-  secondary: { glow: "rgba(255,20,147,.26)", ring: "rgba(255,20,147,.45)" },
-  highlight: { glow: "rgba(255,188,0,.30)", ring: "rgba(255,188,0,.60)" },
+  primary: RING,
+  secondary: RING,
+  highlight: RING,
 };
 
 /** Au-delà de ce déplacement, le geste est un drag : le clic est annulé. */
@@ -294,9 +305,10 @@ export function CircularGalleryModes() {
 
         .cg-card{display:flex;flex-direction:column;align-items:center;gap:.5rem;
           position:relative;height:100%;padding:1.5rem 1rem 1.25rem;
-          border:1px solid rgba(15,23,42,.07);border-radius:1.25rem;
-          background:linear-gradient(160deg,#fff 0%,#fff 55%,var(--cg-tint) 100%);
-          box-shadow:0 6px 20px rgba(15,23,42,.07);
+          border:1px solid rgb(var(--c-vanilla-dark));border-radius:var(--radius-lg);
+          background:linear-gradient(160deg,rgb(var(--surface-card)) 0%,
+            rgb(var(--surface-card)) 50%,rgb(var(--c-vanilla)) 100%);
+          box-shadow:var(--shadow-subtle);
           transition:transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s ease,border-color .3s ease;
           -webkit-tap-highlight-color:transparent}
         .cg-slot:hover .cg-card,.cg-card:focus-visible{transform:translateY(-5px) scale(1.05);
@@ -311,10 +323,10 @@ export function CircularGalleryModes() {
 
         .cg-badge{position:absolute;top:-.6rem;right:1rem;border-radius:999px;
           padding:.15rem .55rem;font-size:.625rem;font-weight:800;letter-spacing:.04em;
-          text-transform:uppercase;color:#fff;background:var(--cg-ring)}
+          text-transform:uppercase;color:rgb(var(--c-on-accent));background:var(--cg-ring)}
 
         .cg-dots{display:flex;justify-content:center;gap:.4rem;margin-top:-.75rem}
-        .cg-dot{height:.375rem;width:.375rem;border-radius:999px;background:rgba(15,23,42,.18);
+        .cg-dot{height:.375rem;width:.375rem;border-radius:999px;background:rgb(var(--surface-border));
           transition:width .3s cubic-bezier(.22,1,.36,1),background-color .3s ease}
         .cg-dot[aria-current="true"]{width:1.375rem;background:var(--cg-ring)}
 
@@ -359,7 +371,6 @@ export function CircularGalleryModes() {
                   {
                     "--cg-glow": accent.glow,
                     "--cg-ring": accent.ring,
-                    "--cg-tint": accent.glow,
                   } as React.CSSProperties
                 }
               >

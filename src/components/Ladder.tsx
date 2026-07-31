@@ -21,9 +21,9 @@ export function Ladder() {
   const duelLadder = useModeLadder("duel");
 
   const renderMedal = (rank: number) => {
-    if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-400" />;
-    if (rank === 2) return <Medal className="h-5 w-5 text-gray-400" />;
-    if (rank === 3) return <Medal className="h-5 w-5 text-orange-400" />;
+    if (rank === 1) return <Trophy className="h-5 w-5 text-rank-gold" />;
+    if (rank === 2) return <Medal className="h-5 w-5 text-rank-silver" />;
+    if (rank === 3) return <Medal className="h-5 w-5 text-rank-bronze" />;
     return <span className="text-sm font-bold text-ink-soft">#{rank}</span>;
   };
 
@@ -52,7 +52,7 @@ export function Ladder() {
       <Reveal className="flex items-center justify-between gap-4" distance={14}>
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-primary hover:text-primary-dark transition-colors"
+          className="inline-flex items-center gap-2 text-ink-soft transition-colors hover:text-ink"
         >
           <ArrowLeft className="h-5 w-5" />
           <span className="text-sm font-semibold">Accueil</span>
@@ -75,8 +75,8 @@ export function Ladder() {
           onClick={() => setView("global")}
           className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
             view === "global"
-              ? "bg-gradient-to-r from-primary to-primary-light text-white"
-              : "bg-background text-ink hover:bg-ink-softer"
+              ? "bg-primary text-ink-accent shadow-subtle"
+              : "border border-line bg-background-sunken text-ink hover:border-primary"
           }`}
         >
           Global
@@ -87,8 +87,8 @@ export function Ladder() {
             onClick={() => setView(mode.id)}
             className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
               view === mode.id
-                ? "bg-gradient-to-r from-primary to-primary-light text-white"
-                : "bg-background text-ink hover:bg-ink-softer"
+                ? "bg-primary text-ink-accent shadow-subtle"
+                : "border border-line bg-background-sunken text-ink hover:border-primary"
             }`}
           >
             {mode.title}
@@ -109,7 +109,7 @@ export function Ladder() {
           <div className="overflow-x-auto" data-lenis-prevent>
             <table className="w-full">
               <thead>
-                <tr className="border-b border-ink-softer bg-background/50">
+                <tr className="border-b border-line bg-background-sunken">
                   <th className="px-4 py-3 text-left text-xs font-semibold text-ink-soft">
                     RANG
                   </th>
@@ -131,7 +131,7 @@ export function Ladder() {
                 {entries.map((entry) => (
                   <tr
                     key={entry.playerId}
-                    className="border-b border-ink-softer hover:bg-background/30 transition-colors"
+                    className="border-b border-line transition-colors odd:bg-background-card even:bg-background-sunken hover:bg-primary/10"
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center w-8">

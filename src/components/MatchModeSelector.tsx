@@ -37,7 +37,7 @@ export function MatchModeSelector({ title, onSelectMode }: MatchModeSelectorProp
               <h3 className="font-bold text-ink mb-1">Joueur</h3>
               <p className="text-xs text-ink-soft">Affronte un autre joueur</p>
             </div>
-            <div className="mt-2 px-4 py-2 rounded-lg bg-secondary text-white text-sm font-semibold">
+            <div className="mt-2 px-4 py-2 rounded-md bg-primary text-ink-accent text-sm font-semibold">
               Jouer
             </div>
           </GlassCard>
@@ -53,12 +53,12 @@ export function MatchModeSelector({ title, onSelectMode }: MatchModeSelectorProp
           className="w-full"
         >
           <GlassCard hover glow="gold" className="h-full p-6 flex flex-col items-center gap-4">
-            <Zap className="h-12 w-12 text-yellow-500" />
+            <Zap className="h-12 w-12 text-highlight" />
             <div className="text-center">
               <h3 className="font-bold text-ink mb-1">Bot IA</h3>
               <p className="text-xs text-ink-soft">Affronte une intelligence artificielle</p>
             </div>
-            <div className="mt-2 px-4 py-2 rounded-lg bg-secondary text-white text-sm font-semibold">
+            <div className="mt-2 px-4 py-2 rounded-md bg-primary text-ink-accent text-sm font-semibold">
               Jouer
             </div>
           </GlassCard>

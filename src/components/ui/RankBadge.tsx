@@ -9,11 +9,13 @@ const RANK_ICON: Record<RankTier, typeof Shield> = {
   diamant: Gem,
 };
 
+/* Les couleurs de rang sont claires : l'icone et le label restent en `ink`
+   pour garder le contraste, le rang se lit sur la bordure et le fond. */
 const RANK_COLOR: Record<RankTier, string> = {
-  bronze: "text-[#9A5B22] border-rank-bronze/50 bg-rank-bronze/10",
-  argent: "text-[#64748B] border-rank-silver/50 bg-rank-silver/10",
-  or: "text-highlight-dark border-highlight/50 bg-highlight/10",
-  diamant: "text-[#0891A8] border-rank-diamond/50 bg-rank-diamond/10",
+  bronze: "text-ink border-rank-bronze bg-rank-bronze/20",
+  argent: "text-ink border-rank-silver bg-rank-silver/20",
+  or: "text-ink border-rank-gold bg-rank-gold/25",
+  diamant: "text-ink border-rank-diamond bg-rank-diamond/20",
 };
 
 interface RankBadgeProps {

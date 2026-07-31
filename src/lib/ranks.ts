@@ -1,10 +1,10 @@
 import type { RankDefinition, RankTier } from "@/types/quiz";
 
 export const RANKS: RankDefinition[] = [
-  { tier: "bronze", label: "Bronze", minElo: 0, maxElo: 999, color: "#CD7F32" },
-  { tier: "argent", label: "Argent", minElo: 1000, maxElo: 1499, color: "#C0C6D6" },
-  { tier: "or", label: "Or", minElo: 1500, maxElo: 1999, color: "#FFBC00" },
-  { tier: "diamant", label: "Diamant", minElo: 2000, maxElo: Infinity, color: "#5FE0E0" },
+  { tier: "bronze", label: "Bronze", minElo: 0, maxElo: 999, color: "rgb(var(--c-bronze))" },
+  { tier: "argent", label: "Argent", minElo: 1000, maxElo: 1499, color: "rgb(var(--c-silver))" },
+  { tier: "or", label: "Or", minElo: 1500, maxElo: 1999, color: "rgb(var(--c-gold))" },
+  { tier: "diamant", label: "Diamant", minElo: 2000, maxElo: Infinity, color: "rgb(var(--c-diamond))" },
 ];
 
 export function getRankForElo(elo: number): RankDefinition {

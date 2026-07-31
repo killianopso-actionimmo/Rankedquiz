@@ -55,7 +55,7 @@ export function DifficultySelector({
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <div
-              className="flex items-center justify-center w-10 h-10 rounded-full font-display font-bold text-white"
+              className="flex items-center justify-center w-10 h-10 rounded-full font-display font-bold text-ink-accent"
               style={{ backgroundColor: tierInfo.color }}
             >
               {level}
@@ -86,10 +86,10 @@ export function DifficultySelector({
                 type="button"
                 className={`w-full p-4 rounded-lg border-2 transition-all text-left hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
                   isLocked
-                    ? "bg-ink/5 border-ink/20"
+                    ? "bg-background-sunken border-line"
                     : isCurrentTier
                       ? `bg-gradient-to-r ${tierDef.bgColor} border-2`
-                      : "border-ink/20 hover:border-ink/40"
+                      : "border-line hover:border-primary"
                 }`}
                 style={
                   !isLocked
@@ -101,10 +101,7 @@ export function DifficultySelector({
                   <div className="flex items-start gap-3 flex-1">
                     <span className="text-2xl">{option.icon}</span>
                     <div className="flex-1">
-                      <p
-                        className="font-bold"
-                        style={{ color: tierDef.color }}
-                      >
+                      <p className="font-bold text-ink">
                         {option.label}
                       </p>
                       <p className="text-xs text-ink-soft mt-1">
@@ -131,12 +128,12 @@ export function DifficultySelector({
           transition={{ delay: 0.24 }}
           onClick={() => onSelectDifficulty("random")}
           type="button"
-          className="w-full p-4 rounded-lg border-2 border-dashed border-highlight/40 bg-highlight/5 transition-all text-left hover:shadow-lg hover:border-highlight/60 active:scale-95"
+          className="w-full p-4 rounded-lg border-2 border-dashed border-highlight bg-highlight/10 transition-all text-left hover:shadow-medium hover:bg-highlight/20 active:scale-95"
         >
           <div className="flex items-center gap-3">
-            <Shuffle className="h-5 w-5 text-highlight-dark" />
+            <Shuffle className="h-5 w-5 text-ink" />
             <div className="flex-1">
-              <p className="font-bold text-highlight-dark">Mode Aléatoire</p>
+              <p className="font-bold text-ink">Mode Aléatoire</p>
               <p className="text-xs text-ink-soft mt-1">
                 Mélange toutes les difficultés
               </p>
@@ -146,7 +143,7 @@ export function DifficultySelector({
 
         <div className="mt-6 flex flex-col gap-3">
           <NeonButton
-            variant="secondary"
+            variant="primary"
             size="lg"
             className="w-full"
             onClick={() => onSelectDifficulty(tierInfo.tier === "beginner" ? 1 : tierInfo.tier === "intermediate" ? 2 : 3)}

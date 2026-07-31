@@ -16,7 +16,8 @@ export function TimerBar({ secondsLeft, maxSeconds }: TimerBarProps) {
       <span
         className={cn(
           "w-12 shrink-0 text-right font-display text-2xl font-extrabold tabular-nums",
-          isLow ? "text-secondary animate-pulse-glow" : "text-ink"
+          // Urgent -> rouge. Sinon texte principal.
+          isLow ? "text-danger animate-pulse-glow" : "text-ink"
         )}
       >
         {Math.ceil(secondsLeft)}
@@ -24,8 +25,8 @@ export function TimerBar({ secondsLeft, maxSeconds }: TimerBarProps) {
       <ProgressBar
         pct={pct}
         colorClass={cn(
-          isLow ? "bg-secondary" : isMid ? "bg-highlight" : "bg-primary-light",
-          isLow && "shadow-neon-magenta"
+          isLow ? "bg-danger" : isMid ? "bg-highlight" : "bg-primary",
+          isLow && "shadow-glow-danger"
         )}
       />
     </div>

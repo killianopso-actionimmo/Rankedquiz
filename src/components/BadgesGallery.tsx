@@ -28,18 +28,18 @@ export function BadgesGallery() {
     <div className="space-y-6">
       {/* Progress Bar */}
       <Reveal
-        className="rounded-lg bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-4"
+        className="rounded-lg border border-vanilla-dark bg-vanilla/50 p-4"
         distance={16}
       >
         <div className="mb-2 flex items-center justify-between">
           <h3 className="font-semibold text-ink">Badges Débloqués</h3>
-          <span className="text-sm font-bold text-highlight">
+          <span className="text-sm font-bold text-ink">
             {unlockedCount} / {totalCount}
           </span>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-ink-softer">
+        <div className="h-2 overflow-hidden rounded-full border border-line bg-background-sunken">
           <div
-            className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+            className="h-full bg-quiz-gradient transition-all duration-300"
             style={{ width: `${(unlockedCount / totalCount) * 100}%` }}
           />
         </div>
@@ -52,8 +52,8 @@ export function BadgesGallery() {
             onClick={() => setSelectedCategory("all")}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
               selectedCategory === "all"
-                ? "bg-blue-500 text-white"
-                : "bg-ink-softer text-ink hover:bg-ink-soft"
+                ? "bg-primary text-ink-accent shadow-subtle"
+                : "border border-line bg-background-sunken text-ink hover:border-primary"
             }`}
           >
             Tous
@@ -65,8 +65,8 @@ export function BadgesGallery() {
                 onClick={() => setSelectedCategory(categoryId)}
                 className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
                   selectedCategory === categoryId
-                    ? "bg-blue-500 text-white"
-                    : "bg-ink-softer text-ink hover:bg-ink-soft"
+                    ? "bg-primary text-ink-accent shadow-subtle"
+                    : "border border-line bg-background-sunken text-ink hover:border-primary"
                 }`}
               >
                 {label}
@@ -77,10 +77,10 @@ export function BadgesGallery() {
 
         <label className="flex items-center gap-2 text-sm">
           <input
-            type="checkbox"
+            type="checkbox" 
             checked={showLocked}
             onChange={(e) => setShowLocked(e.target.checked)}
-            className="rounded"
+            className="h-4 w-4 rounded-[4px] border-2 border-line accent-[rgb(var(--c-cyan))]"
           />
           <span className="text-ink">Afficher les badges verrouillés</span>
         </label>
@@ -103,10 +103,10 @@ export function BadgesGallery() {
               variants={revealItem}
               className={`group relative flex flex-col items-center gap-2 rounded-lg p-3 transition ${
                 isUnlocked
-                  ? "bg-gradient-to-br from-yellow-400/20 to-orange-400/20 ring-1 ring-yellow-400/30"
+                  ? "bg-gradient-to-br from-highlight/25 to-flame/20 ring-1 ring-highlight"
                   : isHidden
-                    ? "bg-ink-softer/30"
-                    : "bg-ink-softer/50 opacity-60"
+                    ? "border border-line bg-background-sunken"
+                    : "border border-line bg-background-sunken opacity-50"
               }`}
             >
               {/* Icon */}
@@ -128,7 +128,7 @@ export function BadgesGallery() {
 
               {/* Unlock Badge */}
               {isUnlocked && (
-                <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-yellow-400 text-xs font-bold">
+                <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-highlight text-ink-accent text-xs font-bold">
                   ✓
                 </div>
               )}
@@ -138,7 +138,7 @@ export function BadgesGallery() {
       </RevealGroup>
 
       {filteredBadges.length === 0 && (
-        <div className="rounded-lg border-2 border-dashed border-ink-softer py-8 text-center">
+        <div className="rounded-lg border-2 border-dashed border-line py-8 text-center">
           <p className="text-sm text-ink-soft">Aucun badge dans cette catégorie.</p>
         </div>
       )}

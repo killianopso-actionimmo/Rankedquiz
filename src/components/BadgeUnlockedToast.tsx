@@ -60,12 +60,12 @@ export function BadgeUnlockedToast() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <div className="rounded-lg bg-gradient-to-r from-yellow-400 to-orange-400 px-4 py-3 shadow-lg">
+      <div className="rounded-lg bg-flame-gradient px-4 py-3 shadow-strong">
         <div className="flex items-center gap-3">
           <div className="text-2xl">{notification.icon}</div>
           <div className="flex flex-col">
-            <p className="text-xs font-bold text-white">🎉 Badge Débloqué !</p>
-            <p className="text-sm font-semibold text-white">{notification.title}</p>
+            <p className="text-xs font-bold text-ink-accent">🎉 Badge Débloqué !</p>
+            <p className="text-sm font-semibold text-ink-accent">{notification.title}</p>
           </div>
         </div>
       </div>

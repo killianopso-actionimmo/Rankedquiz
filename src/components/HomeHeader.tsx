@@ -88,7 +88,7 @@ export function HomeHeader() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div
-              className="flex items-center justify-center w-8 h-8 rounded-full font-display font-bold text-sm text-white"
+              className="flex items-center justify-center w-8 h-8 rounded-full font-display font-bold text-sm text-ink-accent"
               style={{ backgroundColor: tierInfo.color }}
             >
               {level}
@@ -102,7 +102,7 @@ export function HomeHeader() {
         </div>
 
         {/* XP Bar */}
-        <div className="w-full h-2 rounded-full bg-ink/10 overflow-hidden">
+        <div className="w-full h-2 rounded-full border border-line bg-background-sunken overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-300 ease-out"
             style={{

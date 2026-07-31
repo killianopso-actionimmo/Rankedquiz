@@ -20,7 +20,7 @@ export function ProgressBar({
   return (
     <div
       className={cn(
-        "h-3 w-full overflow-hidden rounded-full bg-black/[0.06]",
+        "h-3 w-full overflow-hidden rounded-full border border-line bg-background-sunken",
         trackClassName
       )}
     >

@@ -54,7 +54,7 @@ export function SplashScreen({ onFinish }: { onFinish: () => void }) {
       <button
         type="button"
         onClick={finish}
-        className="btn-tap absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-10 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-white/80 backdrop-blur active:scale-95"
+        className="btn-tap absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-10 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-semibold text-ink-invert backdrop-blur active:scale-95"
       >
         Passer
       </button>

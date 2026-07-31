@@ -26,8 +26,8 @@ export function FloatingXp({ amount, x = 0, y = 0 }: FloatingXpProps) {
       }}
       className="pointer-events-none fixed font-display font-bold text-lg"
       style={{
-        color: "#10B981",
-        textShadow: "0 0 8px rgba(16, 185, 129, 0.6)",
+        color: "rgb(var(--c-success))",
+        textShadow: "0 0 8px rgb(var(--c-success) / 0.6)",
       }}
     >
       +{amount} XP

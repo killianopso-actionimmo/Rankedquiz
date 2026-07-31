@@ -4,10 +4,11 @@ import { useRef } from "react";
 import { useLenis } from "lenis/react";
 import { useReducedMotion } from "framer-motion";
 
+/** Teintes prises dans les tokens : vanilla, cyan, highlight. */
 const HALOS = [
-  { color: "46,107,230", drift: -0.06, className: "-left-24 -top-24 h-[26rem] w-[26rem]" },
-  { color: "255,20,147", drift: 0.1, className: "-right-24 top-1/3 h-[24rem] w-[24rem]" },
-  { color: "255,188,0", drift: -0.14, className: "-bottom-24 left-1/4 h-[22rem] w-[22rem]" },
+  { color: "var(--c-vanilla)", drift: -0.06, className: "-left-24 -top-24 h-[26rem] w-[26rem]" },
+  { color: "var(--c-cyan)", drift: 0.1, className: "-right-24 top-1/3 h-[24rem] w-[24rem]" },
+  { color: "var(--c-highlight)", drift: -0.14, className: "-bottom-24 left-1/4 h-[22rem] w-[22rem]" },
 ];
 
 /**
@@ -50,7 +51,9 @@ export function AmbientBackground() {
           }}
           className={`absolute animate-breath rounded-full blur-[100px] ${halo.className}`}
           style={{
-            background: `radial-gradient(circle, rgba(${halo.color},0.14), transparent 70%)`,
+            // Volontairement discret : le fond de page doit rester #F9FAFB,
+            // les halos ne font que le teinter.
+            background: `radial-gradient(circle, rgb(${halo.color} / 0.16), transparent 70%)`,
             willChange: "transform",
           }}
         />

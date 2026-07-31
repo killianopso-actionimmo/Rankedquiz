@@ -9,10 +9,10 @@ export default function BadgesPage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Navigation Bar */}
-      <div className="px-4 sm:px-6 py-4 border-b border-black/5 flex items-center justify-between">
+      <div className="px-4 sm:px-6 py-4 border-b border-line flex items-center justify-between">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-ink hover:bg-ink-softer transition"
+          className="flex items-center gap-2 px-3 py-2 rounded-md text-ink transition hover:bg-background-sunken"
           title="Retour"
         >
           <span className="text-xl">←</span>
@@ -20,18 +20,18 @@ export default function BadgesPage() {
 
         <button
           onClick={() => router.push("/")}
-          className="px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 transition text-sm sm:text-base"
+          className="px-4 py-2 rounded-md bg-primary text-ink-accent font-semibold shadow-btn-primary transition hover:bg-primary-dark active:translate-y-[3px] active:shadow-none text-sm sm:text-base"
         >
           Menu Principal
         </button>
       </div>
 
       {/* Header */}
-      <div className="px-4 sm:px-6 py-6 bg-gradient-to-br from-blue-500/10 to-purple-500/10">
-        <h1 className="font-display text-3xl font-extrabold text-ink mb-2">
+      <div className="px-4 sm:px-6 py-6 border-b border-line bg-vanilla">
+        <h1 className="font-display text-3xl font-extrabold text-ink-accent mb-2">
           Badges & Réalisations
         </h1>
-        <p className="text-ink-soft">
+        <p className="text-ink-accent/70">
           Débloque des badges en accomplissant des défis et en explorant tous les modes de jeu.
         </p>
       </div>

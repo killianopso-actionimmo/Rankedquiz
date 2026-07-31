@@ -7,10 +7,11 @@ interface NeonButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<NonNullable<NeonButtonProps["variant"]>, string> = {
-  primary: "bg-primary text-white shadow-btn-primary hover:bg-primary-light",
-  secondary: "bg-secondary text-white shadow-btn-secondary hover:bg-secondary-light",
-  highlight: "bg-highlight text-ink shadow-btn-highlight hover:bg-highlight-light",
-  ghost: "bg-white text-ink border border-black/[0.08] shadow-btn-ghost hover:bg-background",
+  // Les fonds accent sont clairs : le texte est toujours `ink-accent`, jamais blanc.
+  primary: "bg-primary text-ink-accent shadow-btn-primary hover:bg-primary-dark",
+  secondary: "bg-secondary text-ink-accent shadow-btn-secondary hover:bg-secondary-dark",
+  highlight: "bg-highlight text-ink-accent shadow-btn-highlight hover:brightness-110",
+  ghost: "bg-background-card text-ink border border-line shadow-btn-ghost hover:bg-background-sunken hover:border-primary",
 };
 
 export function NeonButton({

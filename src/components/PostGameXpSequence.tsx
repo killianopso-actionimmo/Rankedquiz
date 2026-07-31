@@ -59,7 +59,7 @@ export function PostGameXpSequence({
           className="flex items-center gap-3"
         >
           <div
-            className="flex items-center justify-center w-12 h-12 rounded-full font-display font-bold text-lg text-white"
+            className="flex items-center justify-center w-12 h-12 rounded-full font-display font-bold text-lg text-ink-accent"
             style={{ backgroundColor: tierInfo.color }}
           >
             {endLevel}
@@ -113,7 +113,7 @@ export function PostGameXpSequence({
             stiffness: 200,
             damping: 15,
           }}
-          className="text-center py-4 px-6 rounded-lg bg-gradient-to-r from-amber-400/20 to-amber-400/10 border border-amber-400/50"
+          className="text-center py-4 px-6 rounded-lg border border-highlight bg-gradient-to-r from-highlight/25 to-highlight/10"
         >
           <motion.p
             animate={
@@ -121,15 +121,15 @@ export function PostGameXpSequence({
                 ? {
                     scale: [1, 1.2, 1],
                     textShadow: [
-                      "0 0 0px rgba(251, 191, 36, 0)",
-                      "0 0 20px rgba(251, 191, 36, 0.8)",
-                      "0 0 0px rgba(251, 191, 36, 0)",
+                      "0 0 0px rgb(var(--c-highlight) / 0)",
+                      "0 0 20px rgb(var(--c-highlight) / 0.8)",
+                      "0 0 0px rgb(var(--c-highlight) / 0)",
                     ],
                   }
                 : {}
             }
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-display text-2xl font-extrabold text-amber-600"
+            className="font-display text-2xl font-extrabold text-ink"
           >
             🎉 LEVEL UP! 🎉
           </motion.p>

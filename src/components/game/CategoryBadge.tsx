@@ -2,10 +2,12 @@ import { getCategory } from "@/data/categories";
 import { cn } from "@/lib/utils";
 import type { CategoryId } from "@/types/quiz";
 
+/* Cyan et vanilla sont trop clairs pour du texte : le label reste en `ink`,
+   l'accent se lit sur le fond et la bordure. */
 const ACCENT_CLASS = {
-  primary: "bg-primary/10 text-primary border-primary/25",
-  secondary: "bg-secondary/10 text-secondary border-secondary/25",
-  highlight: "bg-highlight/15 text-highlight-dark border-highlight/35",
+  primary: "bg-primary/15 text-ink border-primary",
+  secondary: "bg-secondary text-ink-accent border-vanilla-dark",
+  highlight: "bg-highlight/25 text-ink border-highlight",
 };
 
 export function CategoryBadge({ category, className }: { category: CategoryId; className?: string }) {

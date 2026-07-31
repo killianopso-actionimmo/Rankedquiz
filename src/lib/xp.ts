@@ -16,8 +16,8 @@ export const LEVEL_TIERS: LevelDefinition[] = [
     label: "Beginner",
     minLevel: 1,
     maxLevel: 5,
-    color: "#10B981",
-    bgColor: "from-green-400/20 to-green-400/5",
+    color: "rgb(var(--c-success))",
+    bgColor: "from-success/20 to-success/5",
     description: "Easy questions",
   },
   {
@@ -25,8 +25,8 @@ export const LEVEL_TIERS: LevelDefinition[] = [
     label: "Intermediate",
     minLevel: 6,
     maxLevel: 15,
-    color: "#F59E0B",
-    bgColor: "from-amber-400/20 to-amber-400/5",
+    color: "rgb(var(--c-highlight))",
+    bgColor: "from-highlight/25 to-highlight/5",
     description: "Medium questions",
   },
   {
@@ -34,8 +34,8 @@ export const LEVEL_TIERS: LevelDefinition[] = [
     label: "Expert",
     minLevel: 16,
     maxLevel: 30,
-    color: "#EF4444",
-    bgColor: "from-red-400/20 to-red-400/5",
+    color: "rgb(var(--c-danger))",
+    bgColor: "from-danger/20 to-danger/5",
     description: "Hard questions",
   },
   {
@@ -43,8 +43,8 @@ export const LEVEL_TIERS: LevelDefinition[] = [
     label: "Legend",
     minLevel: 31,
     maxLevel: Infinity,
-    color: "#8B5CF6",
-    bgColor: "from-purple-400/20 to-purple-400/5",
+    color: "rgb(var(--c-info))",
+    bgColor: "from-info/20 to-info/5",
     description: "Extreme difficulty",
   },
 ];

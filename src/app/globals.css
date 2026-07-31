@@ -1,11 +1,8 @@
+@import "./tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  --background: #f4f5fa;
-  --foreground: #1b1f3b;
-}
 
 html {
   height: 100%;
@@ -15,8 +12,10 @@ body {
   /* min-height plutot que height : le document doit pouvoir grandir pour que le
      scroll natif (et donc Lenis) fonctionne. */
   min-height: 100%;
-  background: var(--background);
-  color: var(--foreground);
+  background: rgb(var(--surface-page));
+  color: rgb(var(--surface-text));
+  font-weight: var(--font-regular);
+  transition: background-color var(--duration-base) var(--ease-out);
   overscroll-behavior-y: none;
 }
 
@@ -46,25 +45,46 @@ html.lenis body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ---------------------------------------------------------------------------
+   FOCUS GLOBAL — outline cyan 2px sur tout element focus au clavier.
+   Un seul endroit, aucun composant n'a besoin de le redefinir.
+   ------------------------------------------------------------------------- */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid rgb(var(--c-cyan));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+::selection {
+  background: rgb(var(--c-cyan) / 0.35);
+  color: rgb(var(--c-ink));
+}
+
 @layer components {
+  /* ============================ SURFACES ============================== */
+  .surface-card {
+    @apply rounded-lg border border-line bg-background-card shadow-subtle;
+  }
+
   .glass-card {
-    @apply relative rounded-xl2 border border-black/[0.05] bg-background-card shadow-card;
+    @apply relative rounded-lg border border-line bg-background-card shadow-subtle;
   }
 
   .glass-card-hover {
-    @apply transition-all duration-200 hover:shadow-card-hover active:scale-[0.98];
+    @apply transition-all duration-200 ease-token hover:shadow-medium active:scale-[0.98];
   }
 
+  /* ============================ ACCENTS ============================== */
   .neon-border-blue {
-    @apply border border-primary/25 shadow-[0_10px_28px_rgba(0,71,171,0.16)];
+    @apply border border-primary/40 shadow-glow-cyan;
   }
 
   .neon-border-magenta {
-    @apply border border-secondary/25 shadow-[0_10px_28px_rgba(255,20,147,0.16)];
+    @apply border border-vanilla-dark shadow-[0_10px_28px_rgb(var(--c-vanilla-dark)/0.25)];
   }
 
   .neon-border-gold {
-    @apply border border-highlight/40 shadow-[0_10px_28px_rgba(255,188,0,0.18)];
+    @apply border border-highlight/60 shadow-[0_10px_28px_rgb(var(--c-highlight)/0.25)];
   }
 
   .neon-text {
@@ -78,6 +98,20 @@ html.lenis body {
   .app-bg {
     @apply bg-background;
   }
+
+  /* ============================ LOADING ==============================
+     Animation subtile, sans clignotement agressif. */
+  .skeleton {
+    @apply rounded-md;
+    background: linear-gradient(
+      90deg,
+      rgb(var(--surface-border) / 0.55) 25%,
+      rgb(var(--surface-border) / 0.25) 50%,
+      rgb(var(--surface-border) / 0.55) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-sweep 1.6s ease-in-out infinite;
+  }
 }
 
 @layer utilities {
@@ -87,5 +121,10 @@ html.lenis body {
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Texte en gradient signature vanilla -> cyan */
+  .text-quiz-gradient {
+    @apply bg-quiz-gradient bg-clip-text text-transparent;
   }
 }
