@@ -5,6 +5,7 @@ import { buildChaosQueue, shuffle } from "@/data/chaosQuestions";
 import {
   connectChaosRoom,
   generateRoomCode,
+  generatePlayerId,
   type ChaosTransport,
 } from "@/lib/chaosRoom";
 import {
@@ -111,6 +112,7 @@ export function useChaosHost() {
   const createRoom = useCallback(
     (deck: ChaosDeck) => {
       const code = generateRoomCode();
+      const hostId = generatePlayerId();
       transportRef.current?.close();
       transportRef.current = connectChaosRoom(code, handleMessage);
 
@@ -118,7 +120,14 @@ export function useChaosHost() {
         code,
         deck,
         phase: "lobby",
-        players: [],
+        players: [
+          {
+            id: hostId,
+            name: "Vous",
+            avatar: "av:0",
+            joinedAt: Date.now(),
+          },
+        ],
         order: [],
         index: 0,
         queue: buildChaosQueue(deck),
