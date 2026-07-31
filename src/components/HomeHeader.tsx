@@ -48,28 +48,25 @@ export function HomeHeader() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <Image src="/logo.png" alt="Ranked Quiz" width={40} height={40} />
-          <div className="leading-snug">
-            <p className="font-display text-base font-extrabold text-ink">RANKED QUIZ</p>
-            <p className="pb-0.5 text-[11px] uppercase tracking-[0.2em] text-ink-faint">Live &amp; Competitive</p>
-          </div>
+          <p className="font-display text-base font-extrabold text-ink">RANKED QUIZ</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Link
             href="/leaderboard"
             aria-label="Classement"
-            className="btn-tap active:scale-95 t3d-g hh-trophy"
+            className="btn-tap flex items-center justify-center active:scale-95 t3d-g hh-trophy"
           >
             <Trophy3D />
           </Link>
           <Link
             href="/badges"
             aria-label="Succès"
-            className="btn-tap active:scale-95 b3d-g hh-badge"
+            className="btn-tap flex items-center justify-center active:scale-95 b3d-g hh-badge"
           >
             <Badge3D />
           </Link>
-          <div className="flex items-center gap-1.5 rounded-full border border-highlight/40 bg-highlight/10 px-3 py-1.5 ml-1">
+          <div className="flex items-center gap-1 f3d-g">
             <div className="hh-flame">
               <Flame3D />
             </div>
@@ -79,7 +76,7 @@ export function HomeHeader() {
             type="button"
             onClick={() => setAuthOpen(true)}
             aria-label="Mon profil"
-            className="btn-tap rounded-full active:scale-95 ml-1"
+            className="btn-tap rounded-full active:scale-95"
           >
             <RankBadge tier={rank.tier} label={rank.label} size="sm" />
           </button>
