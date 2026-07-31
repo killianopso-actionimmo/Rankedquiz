@@ -27,13 +27,13 @@ export function HomeHeader() {
   return (
     <header className="sticky top-0 z-40 bg-background flex flex-col gap-4 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-6">
       <style>{`
-        .hh-trophy { --t3d-h: 36px; }
-        .hh-badge { --b3d-d: 36px; }
-        .hh-flame { --f3d-h: 32px; }
+        .hh-trophy { --t3d-h: 20px; }
+        .hh-badge { --b3d-d: 20px; }
+        .hh-flame { --f3d-h: 18px; }
         @media (max-width: 640px) {
-          .hh-trophy { --t3d-h: 28px; }
-          .hh-badge { --b3d-d: 28px; }
-          .hh-flame { --f3d-h: 24px; }
+          .hh-trophy { --t3d-h: 16px; }
+          .hh-badge { --b3d-d: 16px; }
+          .hh-flame { --f3d-h: 14px; }
         }
       `}</style>
       {/* Top Row: Logo & Controls */}
