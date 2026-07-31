@@ -47,20 +47,24 @@ export function connectChaosRoom(
   onMessage: (msg: ChaosMessage) => void,
 ): ChaosTransport {
   const supabase = createClient();
+  let bcFallback: BroadcastChannel | null = null;
 
   if (supabase) {
-    console.log("[Chaos] Using Supabase Realtime for", code);
+    console.log("[Chaos] Attempting Supabase Realtime for", code);
     const channel = supabase.channel(`chaos-${code}`, {
       config: { broadcast: { self: false } },
     });
 
-    // Les messages emis avant SUBSCRIBED seraient perdus : on les met en file.
     let ready = false;
     const pending: ChaosMessage[] = [];
 
     const push = (msg: ChaosMessage) => {
-      console.log("[Chaos] Sending via Supabase:", msg.t);
-      void channel.send({ type: "broadcast", event: "chaos", payload: msg });
+      if (bcFallback) {
+        bcFallback.postMessage(msg);
+      } else {
+        console.log("[Chaos] Sending via Supabase:", msg.t);
+        void channel.send({ type: "broadcast", event: "chaos", payload: msg });
+      }
     };
 
     channel
@@ -72,9 +76,19 @@ export function connectChaosRoom(
         console.log("[Chaos] Supabase channel status:", status);
         if (status === "SUBSCRIBED") {
           ready = true;
+          console.log("[Chaos] ✓ Supabase Realtime connected!");
           while (pending.length) push(pending.shift()!);
-        } else if (status === "CHANNEL_ERROR") {
-          console.error("[Chaos] Supabase Realtime failed - check if it's enabled in Settings");
+        } else if (status === "CHANNEL_ERROR" || status === "CLOSED") {
+          console.log("[Chaos] Supabase failed, activating BroadcastChannel fallback...");
+          void supabase.removeChannel(channel);
+          bcFallback = new BroadcastChannel(`chaos-${code}`);
+          console.log("[Chaos] ✓ BroadcastChannel active (local mode)");
+          bcFallback.onmessage = (e) => onMessage(e.data as ChaosMessage);
+          ready = true;
+          while (pending.length) {
+            const msg = pending.shift();
+            if (msg) bcFallback.postMessage(msg);
+          }
         }
       });
 
@@ -82,6 +96,7 @@ export function connectChaosRoom(
       kind: "supabase",
       send: (msg) => (ready ? push(msg) : pending.push(msg)),
       close: () => {
+        if (bcFallback) bcFallback.close();
         void supabase.removeChannel(channel);
       },
     };

@@ -2,11 +2,12 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
-import { Beer, Home, Share2, SkipForward, Users } from "lucide-react";
+import { ArrowRight, Beer, Home, Share2, SkipForward, Users } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Choice } from "@/components/ui/Field";
+import { Choice, Input } from "@/components/ui/Field";
 import { cn } from "@/components/ui/cn";
 import { ChaosAvatar } from "@/components/chaos/ChaosAvatar";
 import { ChaosLogo } from "@/components/logos/ChaosLogo";
@@ -32,8 +33,10 @@ import {
  * discret, filet de securite si un telephone lache en pleine partie.
  */
 export default function ChaosHostPage() {
+  const router = useRouter();
   const { state, createRoom, setDrinks, start, skip, closeRoom } = useChaosHost();
   const [sharing, setSharing] = useState(false);
+  const [joinCode, setJoinCode] = useState("");
 
   // Le salon n'existe qu'apres un clic cote client : pas de rendu serveur ici,
   // `window.location` est donc lisible pendant le rendu.
@@ -57,36 +60,77 @@ export default function ChaosHostPage() {
           </p>
         </header>
 
-        <div className="grid w-full max-w-3xl gap-token-4 sm:grid-cols-2">
-          {(Object.keys(CHAOS_DECK_META) as ChaosDeck[]).map((deck) => {
-            const meta = CHAOS_DECK_META[deck];
-            return (
-              <button
-                key={deck}
-                onClick={() => createRoom(deck)}
-                className={cn(
-                  "group flex flex-col gap-token-2 rounded-lg border border-line bg-background-card p-token-6 text-left",
-                  "shadow-subtle transition-all duration-[var(--duration-base)] ease-token",
-                  "hover:-translate-y-1 hover:shadow-medium",
-                  deck === "discover" ? "hover:border-secondary-dark" : "hover:border-danger",
-                )}
+        <div className="w-full max-w-3xl space-y-token-6">
+          <div>
+            <p className="mb-token-2 text-center text-sm font-semibold uppercase tracking-widest text-ink-soft">
+              Créer une partie
+            </p>
+            <div className="grid gap-token-4 sm:grid-cols-2">
+              {(Object.keys(CHAOS_DECK_META) as ChaosDeck[]).map((deck) => {
+                const meta = CHAOS_DECK_META[deck];
+                return (
+                  <button
+                    key={deck}
+                    onClick={() => createRoom(deck)}
+                    className={cn(
+                      "group flex flex-col gap-token-2 rounded-lg border border-line bg-background-card p-token-6 text-left",
+                      "shadow-subtle transition-all duration-[var(--duration-base)] ease-token",
+                      "hover:-translate-y-1 hover:shadow-medium",
+                      deck === "discover" ? "hover:border-secondary-dark" : "hover:border-danger",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "w-fit rounded-full px-token-4 py-token-1 font-display text-sm font-bold text-ink-accent",
+                        deck === "discover" ? "bg-secondary" : "bg-danger",
+                      )}
+                    >
+                      {meta.label}
+                    </span>
+                    <span className="font-display text-xl font-bold">{meta.tagline}</span>
+                    <span className="text-sm leading-snug text-ink-soft">{meta.detail}</span>
+                    <span className="mt-token-2 text-xs font-semibold uppercase tracking-widest text-ink-faint">
+                      {CHAOS_TOTAL_QUESTIONS} questions · 5 rounds
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-token-4">
+            <div className="flex-1 border-t border-line" />
+            <span className="text-xs font-semibold uppercase tracking-widest text-ink-faint">ou</span>
+            <div className="flex-1 border-t border-line" />
+          </div>
+
+          <div className="flex flex-col gap-token-4 rounded-lg border border-line bg-background-card p-token-6">
+            <p className="text-center text-sm font-semibold uppercase tracking-widest text-ink-soft">
+              Rejoindre une partie
+            </p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (joinCode.trim()) router.push(`/play/chaos/join/${joinCode.toUpperCase()}`);
+              }}
+              className="flex gap-token-2"
+            >
+              <Input
+                placeholder="Code (ex: 5U6W)"
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 4))}
+                maxLength={4}
+                className="text-center text-lg font-bold tracking-widest"
+              />
+              <Button
+                type="submit"
+                disabled={joinCode.length !== 4}
+                icon={<ArrowRight className="h-4 w-4" />}
               >
-                <span
-                  className={cn(
-                    "w-fit rounded-full px-token-4 py-token-1 font-display text-sm font-bold text-ink-accent",
-                    deck === "discover" ? "bg-secondary" : "bg-danger",
-                  )}
-                >
-                  {meta.label}
-                </span>
-                <span className="font-display text-xl font-bold">{meta.tagline}</span>
-                <span className="text-sm leading-snug text-ink-soft">{meta.detail}</span>
-                <span className="mt-token-2 text-xs font-semibold uppercase tracking-widest text-ink-faint">
-                  {CHAOS_TOTAL_QUESTIONS} questions · 5 rounds
-                </span>
-              </button>
-            );
-          })}
+                Rejoindre
+              </Button>
+            </form>
+          </div>
         </div>
 
         <Link href="/" className="text-sm text-ink-soft underline-offset-4 hover:underline">
