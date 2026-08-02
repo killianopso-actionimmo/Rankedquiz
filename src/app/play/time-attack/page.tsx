@@ -16,6 +16,7 @@ import { useStoredXp, setStoredXp } from "@/lib/storage";
 import { calculateXpGain } from "@/lib/xp-gain";
 import { shuffleQuestionChoices } from "@/data/questions";
 import { filterQuestionsByMode, QuestionSessionManager } from "@/services/questions";
+import { useQuizSounds } from "@/hooks/useQuizSounds";
 import type { QcmQuestion } from "@/types/quiz";
 
 const START_SECONDS = 60;
@@ -32,6 +33,7 @@ function buildQueue(diff?: 1 | 2 | 3) {
 }
 
 export default function TimeAttackPage() {
+  const sounds = useQuizSounds();
   const startXp = useStoredXp();
   const [difficulty, setDifficulty] = useState<1 | 2 | 3 | "random" | null>(null);
   const [queue, setQueue] = useState<QcmQuestion[]>([]);
@@ -54,7 +56,8 @@ export default function TimeAttackPage() {
     setLocked(false);
     setGameOver(false);
     setDifficulty(diff);
-  }, []);
+    sounds.playStart();
+  }, [sounds]);
 
   const currentQuestion = queue[qIndex % queue.length];
 
@@ -77,6 +80,7 @@ export default function TimeAttackPage() {
       setAnswerStates(nextStates);
 
       if (isCorrect) {
+        sounds.playCorrect();
         addSeconds(CORRECT_BONUS);
         setScore((s) => s + 1);
         setStreak((s) => {
@@ -86,6 +90,7 @@ export default function TimeAttackPage() {
           return next;
         });
       } else {
+        sounds.playWrong();
         addSeconds(WRONG_PENALTY);
         setStreak(0);
       }
@@ -101,9 +106,10 @@ export default function TimeAttackPage() {
         });
         setAnswerStates(IDLE_STATES);
         setLocked(false);
+        sounds.playNext();
       }, 650);
     },
-    [locked, gameOver, currentQuestion, addSeconds, queue.length]
+    [locked, gameOver, currentQuestion, addSeconds, queue.length, sounds]
   );
 
   const handleRetry = () => {

@@ -13,6 +13,7 @@ import { shuffle } from "@/lib/utils";
 import { useStoredXp, setStoredXp } from "@/lib/storage";
 import { calculateXpGain } from "@/lib/xp-gain";
 import { DifficultySelector } from "@/components/DifficultySelector";
+import { useQuizSounds } from "@/hooks/useQuizSounds";
 import type { CategoryId, QcmQuestion } from "@/types/quiz";
 
 const QUESTIONS_PER_ROUND = 8;
@@ -25,6 +26,7 @@ const ACCENT_ICON_WRAP = {
 };
 
 export default function ThematiquePage() {
+  const sounds = useQuizSounds();
   const startXp = useStoredXp();
   const [category, setCategory] = useState<CategoryId | null>(null);
   const [difficulty, setDifficulty] = useState<1 | 2 | 3 | "random" | null>(null);
@@ -60,6 +62,7 @@ export default function ThematiquePage() {
     setLocked(false);
     setFinished(false);
     setDifficulty(diff);
+    sounds.playStart();
   };
 
   const handleAnswer = useCallback(
@@ -73,7 +76,12 @@ export default function ThematiquePage() {
         return "disabled";
       }) as AnswerState[];
       setAnswerStates(nextStates);
-      if (isCorrect) setScore((s) => s + 1);
+      if (isCorrect) {
+        setScore((s) => s + 1);
+        sounds.playCorrect();
+      } else {
+        sounds.playWrong();
+      }
 
       setTimeout(() => {
         setQIndex((i) => {
@@ -86,9 +94,10 @@ export default function ThematiquePage() {
         });
         setAnswerStates(IDLE_STATES);
         setLocked(false);
+        sounds.playNext();
       }, 650);
     },
-    [locked, finished, correctAnswerIndex, shuffledChoices.length]
+    [locked, finished, correctAnswerIndex, shuffledChoices.length, sounds]
   );
 
   const categoryLabel = useMemo(

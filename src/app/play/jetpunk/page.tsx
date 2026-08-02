@@ -13,9 +13,11 @@ import { GameOverScreen } from "@/components/game/GameOverScreen";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useStoredXp, setStoredXp } from "@/lib/storage";
 import { calculateXpGain } from "@/lib/xp-gain";
+import { useQuizSounds } from "@/hooks/useQuizSounds";
 import type { JetpunkRound } from "@/types/quiz";
 
 export default function JetpunkPage() {
+  const sounds = useQuizSounds();
   const startXp = useStoredXp();
   const [round, setRound] = useState<JetpunkRound | null>(null);
   const [foundIds, setFoundIds] = useState<Set<string>>(new Set());
@@ -39,6 +41,7 @@ export default function JetpunkPage() {
     setIsPaused(false);
     reset(r.timeLimitSeconds);
     xpSavedRef.current = false;
+    sounds.playStart();
     setTimeout(() => inputRef.current?.focus(), 50);
   };
 
@@ -65,6 +68,7 @@ export default function JetpunkPage() {
       );
 
       if (matches.length > 0) {
+        sounds.playCorrect();
         addSeconds(5 * matches.length);
         setFoundIds((prev) => {
           const next = new Set(prev);
@@ -76,7 +80,7 @@ export default function JetpunkPage() {
         setInput("");
       }
     },
-    [round, foundIds, isPaused, addSeconds]
+    [round, foundIds, isPaused, addSeconds, sounds]
   );
 
   if (!round) {

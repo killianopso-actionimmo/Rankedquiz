@@ -17,6 +17,7 @@ import { MatchModeSelector, type MatchMode } from "@/components/MatchModeSelecto
 import { BotDifficultySelector, type BotDifficulty } from "@/components/BotDifficultySelector";
 import { getBotConfig, simulateBotAnswer } from "@/services/bot";
 import { fireFlameBurst } from "@/lib/flames";
+import { useQuizSounds } from "@/hooks/useQuizSounds";
 
 const OPPONENT_NAMES = ["Nova_92", "QuizKing", "LunaFast", "ByteRush", "Zed_Prime", "Ariaa"];
 const QUESTIONS_PER_DUEL = 8;
@@ -25,6 +26,7 @@ const IDLE_STATES: AnswerState[] = ["idle", "idle", "idle", "idle"];
 type Phase = "searching" | "found" | "countdown" | "quiz" | "result";
 
 export default function DuelPage() {
+  const sounds = useQuizSounds();
   const playerElo = useStoredElo();
   const startXp = useStoredXp();
   const [matchMode, setMatchMode] = useState<MatchMode | null>(null);
@@ -67,6 +69,7 @@ export default function DuelPage() {
       () => {
         if (countdown === 0) {
           setPhase("quiz");
+          sounds.playStart();
         } else {
           setCountdown((c) => c - 1);
         }
@@ -74,7 +77,7 @@ export default function DuelPage() {
       countdown === 0 ? 500 : 700
     );
     return () => clearTimeout(t);
-  }, [phase, countdown]);
+  }, [phase, countdown, sounds]);
 
   const currentQuestion = questions[qIndex];
 
@@ -117,6 +120,9 @@ export default function DuelPage() {
       if (isCorrect) {
         setPlayerScore((s) => s + 1);
         fireFlameBurst();
+        sounds.playCorrect();
+      } else {
+        sounds.playWrong();
       }
 
       setTimeout(() => {
@@ -130,9 +136,10 @@ export default function DuelPage() {
         });
         setAnswerStates(IDLE_STATES);
         setLocked(false);
+        sounds.playNext();
       }, 650);
     },
-    [locked, currentQuestion, questions.length]
+    [locked, currentQuestion, questions.length, sounds]
   );
 
   const xpSavedRef = useRef(false);

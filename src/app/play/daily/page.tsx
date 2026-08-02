@@ -18,6 +18,7 @@ import { NeonButton } from "@/components/ui/NeonButton";
 import { PostGameXpSequence } from "@/components/PostGameXpSequence";
 import { useStoredXp, setStoredXp } from "@/lib/storage";
 import { calculateXpGain } from "@/lib/xp-gain";
+import { useQuizSounds } from "@/hooks/useQuizSounds";
 
 const DAILY_SECONDS = 120;
 const IDLE_STATES: AnswerState[] = ["idle", "idle", "idle", "idle"];
@@ -28,6 +29,7 @@ interface DailyResult {
 }
 
 export default function DailyQuizPage() {
+  const sounds = useQuizSounds();
   const startXp = useStoredXp();
   const [showXpAnimation, setShowXpAnimation] = useState(false);
   const [questions] = useState(() => getDailyQuestions());
@@ -41,6 +43,11 @@ export default function DailyQuizPage() {
   const finished = result !== null;
   const animatedCorrect = useCountUp(result?.correctCount ?? 0);
   const animatedStreak = useCountUp(result?.streak ?? 0);
+
+  useEffect(() => {
+    sounds.playStart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const finishDaily = useCallback(() => {
     const { streak } = recordDailyCompletion();
@@ -68,9 +75,10 @@ export default function DailyQuizPage() {
         });
         setAnswerStates(IDLE_STATES);
         setLocked(false);
+        sounds.playNext();
       }, 650);
     },
-    [questions.length, finishDaily]
+    [questions.length, finishDaily, sounds]
   );
 
   const handleAnswer = useCallback(
@@ -83,9 +91,10 @@ export default function DailyQuizPage() {
         return "disabled";
       }) as AnswerState[];
       setAnswerStates(nextStates);
+      isCorrect ? sounds.playCorrect() : sounds.playWrong();
       advance(isCorrect);
     },
-    [locked, finished, currentQuestion, advance]
+    [locked, finished, currentQuestion, advance, sounds]
   );
 
   const xpSavedRef = useRef(false);

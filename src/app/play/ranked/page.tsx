@@ -19,6 +19,7 @@ import { LevelDifficultySelector } from "@/components/LevelDifficultySelector";
 import { getBotConfig, simulateBotAnswer } from "@/services/bot";
 import { fireFlameBurst } from "@/lib/flames";
 import { useStoredXp } from "@/lib/storage";
+import { useQuizSounds } from "@/hooks/useQuizSounds";
 
 const QUESTIONS_PER_MATCH = 10;
 const SECONDS_PER_QUESTION = 12;
@@ -31,6 +32,7 @@ interface MatchResult {
 }
 
 export default function RankedPage() {
+  const sounds = useQuizSounds();
   const startingElo = useStoredElo();
   const xp = useStoredXp();
   const [matchMode, setMatchMode] = useState<MatchMode | null>(null);
@@ -73,9 +75,10 @@ export default function RankedPage() {
         setAnswerStates(IDLE_STATES);
         setLocked(false);
         resetRef.current(SECONDS_PER_QUESTION);
+        sounds.playNext();
       }, 650);
     },
-    [questions.length, finishMatch]
+    [questions.length, finishMatch, sounds]
   );
 
   const { secondsLeft, reset } = useCountdown(SECONDS_PER_QUESTION, {
@@ -98,8 +101,9 @@ export default function RankedPage() {
   useEffect(() => {
     if (matchMode === "bot" && botDifficulty && questions.length === 0) {
       setQuestions(getRandomQuestions(QUESTIONS_PER_MATCH));
+      sounds.playStart();
     }
-  }, [matchMode, botDifficulty, questions.length]);
+  }, [matchMode, botDifficulty, questions.length, sounds]);
 
   const handleAnswer = useCallback(
     (choiceIndex: number) => {
@@ -111,7 +115,12 @@ export default function RankedPage() {
         return "disabled";
       }) as AnswerState[];
       setAnswerStates(nextStates);
-      if (isCorrect) fireFlameBurst();
+      if (isCorrect) {
+        fireFlameBurst();
+        sounds.playCorrect();
+      } else {
+        sounds.playWrong();
+      }
 
       if (matchMode === "bot" && botDifficulty) {
         simulateBotAction(choiceIndex, isCorrect);
@@ -119,7 +128,7 @@ export default function RankedPage() {
         advance(isCorrect);
       }
     },
-    [locked, finished, currentQuestion, advance, matchMode, botDifficulty]
+    [locked, finished, currentQuestion, advance, matchMode, botDifficulty, sounds]
   );
 
   const simulateBotAction = useCallback(
@@ -155,6 +164,7 @@ export default function RankedPage() {
     setLevelDifficulty(difficulty);
     const questionDifficulty = difficulty !== "random" ? difficulty : undefined;
     setQuestions(getRandomQuestions(QUESTIONS_PER_MATCH, undefined, questionDifficulty));
+    sounds.playStart();
   };
 
   if (!matchMode) {
