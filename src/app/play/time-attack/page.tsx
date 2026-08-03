@@ -6,7 +6,7 @@ import { useCountdown } from "@/hooks/useCountdown";
 import { QCM_QUESTIONS } from "@/data/questions";
 import { shuffle } from "@/lib/utils";
 import { GameHeader } from "@/components/game/GameHeader";
-import { TimerBar } from "@/components/game/TimerBar";
+import { BombTimer } from "@/components/game/BombTimer";
 import { QuestionCard } from "@/components/game/QuestionCard";
 import { AnswerButton, type AnswerState } from "@/components/game/AnswerButton";
 import { GameOverScreen } from "@/components/game/GameOverScreen";
@@ -164,7 +164,7 @@ export default function TimeAttackPage() {
       <GameHeader title="Time Attack" />
 
       <div className="flex flex-col gap-2 px-4 sm:px-6">
-        <TimerBar secondsLeft={secondsLeft} maxSeconds={START_SECONDS} />
+        <BombTimer timeLeft={secondsLeft} totalTime={START_SECONDS} isGameActive={!gameOver} />
         <div className="flex items-center justify-between text-sm text-ink-soft">
           <span>
             Score <span className="font-display font-bold text-ink">{score}</span>

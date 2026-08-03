@@ -10,7 +10,7 @@ import { useCountdown } from "@/hooks/useCountdown";
 import { useCountUp } from "@/hooks/useCountUp";
 import { fireVictoryFlameBurst } from "@/lib/flames";
 import { GameHeader } from "@/components/game/GameHeader";
-import { TimerBar } from "@/components/game/TimerBar";
+import { BombTimer } from "@/components/game/BombTimer";
 import { QuestionCard } from "@/components/game/QuestionCard";
 import { AnswerButton, type AnswerState } from "@/components/game/AnswerButton";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -180,7 +180,7 @@ export default function DailyQuizPage() {
       <GameHeader title="Quiz du Jour" />
 
       <div className="px-4 sm:px-6">
-        <TimerBar secondsLeft={secondsLeft} maxSeconds={DAILY_SECONDS} />
+        <BombTimer timeLeft={secondsLeft} totalTime={DAILY_SECONDS} isGameActive={!finished} />
       </div>
 
       <div className="flex flex-col gap-4 px-4 sm:px-6">
