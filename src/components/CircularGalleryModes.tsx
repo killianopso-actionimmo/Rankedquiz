@@ -384,7 +384,6 @@ export function CircularGalleryModes() {
                   <h3 className="font-display text-lg font-bold leading-snug text-ink">
                     {mode.title}
                   </h3>
-                  <p className="text-center text-sm leading-snug text-ink-soft">{mode.tagline}</p>
                 </Link>
               </li>
             );

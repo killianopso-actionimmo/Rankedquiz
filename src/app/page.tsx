@@ -16,12 +16,9 @@ export default function Home() {
 
       <div>
         <Reveal direction="up" distance={16} className="px-4 sm:px-6">
-          <h2 className="mb-1 font-display text-2xl font-extrabold leading-snug text-ink">
+          <h2 className="font-display text-2xl font-extrabold leading-snug text-ink">
             Choisis ton mode
           </h2>
-          <p className="text-sm leading-relaxed text-ink-soft">
-            Six façons de tester tes connaissances : seul, en direct, ou entre potes.
-          </p>
         </Reveal>
 
         {/* Pleine largeur : la galerie gère elle-meme ses marges internes pour
