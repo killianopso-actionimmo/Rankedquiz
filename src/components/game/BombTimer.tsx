@@ -76,18 +76,18 @@ export interface BombTimerProps {
   forceStress?: boolean;
   /** Overrides de couleurs, partiels — le reste garde les défauts rouge/orange + cyan. */
   colors?: BombTimerColors;
-  width?: number;
+  width?: number | string;
   height?: number;
   className?: string;
 }
 
-const VB_W = 100;
-const VB_H = 340;
-const CX = 50;
-const ROPE_HALF_W = 5;
-const TOP_Y = 26;
-const BOTTOM_Y = 278;
-const TRACK_LEN = BOTTOM_Y - TOP_Y;
+const VB_W = 480;
+const VB_H = 100;
+const CY = 50;
+const ROPE_HALF_H = 5;
+const LEFT_X = 34;
+const RIGHT_X = 430;
+const TRACK_LEN = RIGHT_X - LEFT_X;
 const BOMB_RADIUS = 15;
 const BOMB_OFFSET = 18;
 const SMOOTHING = 0.16;
@@ -191,8 +191,8 @@ export function BombTimer({
   stressThreshold = 0.2,
   forceStress = false,
   colors,
-  width = 96,
-  height = 320,
+  width = "100%",
+  height = 90,
   className,
 }: BombTimerProps) {
   const c = useMemo(() => ({ ...DEFAULT_COLORS, ...colors }), [colors]);
@@ -216,33 +216,33 @@ export function BombTimer({
   useEffect(() => ensureStylesInjected(), []);
 
   const applyRatioToDom = (ratio: number) => {
-    const markerY = TOP_Y + (1 - ratio) * TRACK_LEN;
+    const markerX = LEFT_X + (1 - ratio) * TRACK_LEN;
 
     if (ashRef.current) {
-      ashRef.current.setAttribute("y", String(TOP_Y));
-      ashRef.current.setAttribute("height", String(Math.max(0, markerY - TOP_Y)));
+      ashRef.current.setAttribute("x", String(LEFT_X));
+      ashRef.current.setAttribute("width", String(Math.max(0, markerX - LEFT_X)));
     }
     if (ropeRef.current) {
-      ropeRef.current.setAttribute("y", String(markerY));
-      ropeRef.current.setAttribute("height", String(Math.max(0, BOTTOM_Y - markerY)));
+      ropeRef.current.setAttribute("x", String(markerX));
+      ropeRef.current.setAttribute("width", String(Math.max(0, RIGHT_X - markerX)));
     }
     if (twistRef.current) {
-      twistRef.current.setAttribute("y", String(markerY));
-      twistRef.current.setAttribute("height", String(Math.max(0, BOTTOM_Y - markerY)));
+      twistRef.current.setAttribute("x", String(markerX));
+      twistRef.current.setAttribute("width", String(Math.max(0, RIGHT_X - markerX)));
     }
     if (flameGroupRef.current) {
-      flameGroupRef.current.setAttribute("transform", `translate(${CX}, ${markerY})`);
+      flameGroupRef.current.setAttribute("transform", `translate(${markerX}, ${CY})`);
     }
-    const bombY = Math.min(markerY + BOMB_OFFSET, BOTTOM_Y + BOMB_RADIUS * 0.4);
+    const bombX = Math.min(markerX + BOMB_OFFSET, RIGHT_X + BOMB_RADIUS * 0.4);
     if (bombGroupRef.current) {
-      bombGroupRef.current.setAttribute("transform", `translate(${CX}, ${bombY})`);
+      bombGroupRef.current.setAttribute("transform", `translate(${bombX}, ${CY})`);
     }
     if (fuseLineRef.current) {
-      fuseLineRef.current.setAttribute("y1", String(markerY));
-      fuseLineRef.current.setAttribute("y2", String(bombY - BOMB_RADIUS));
+      fuseLineRef.current.setAttribute("x1", String(markerX));
+      fuseLineRef.current.setAttribute("x2", String(bombX - BOMB_RADIUS));
     }
     if (emitterRef.current) {
-      emitterRef.current.style.transform = `translate(-50%, 0) translateY(${markerY}px)`;
+      emitterRef.current.style.left = `${(markerX / VB_W) * 100}%`;
     }
   };
 
@@ -309,166 +309,22 @@ export function BombTimer({
   const sparkParticles = useMemo(() => makeParticles(6, 16, 22, 1.1), []);
   const emberDots = useMemo(
     () => [
-      { x: -3, t: 0.3, delay: 0 },
-      { x: 4, t: 0.55, delay: 0.5 },
-      { x: -1, t: 0.8, delay: 1 },
+      { t: 0.28, y: -3, delay: 0 },
+      { t: 0.52, y: 4, delay: 0.5 },
+      { t: 0.76, y: -2, delay: 1 },
     ],
     []
   );
   const explosionBits = useMemo(() => makeParticles(14, 42, 42, 0.2), []);
+  const explosionLeftPct = ((RIGHT_X + 20) / VB_W) * 100;
 
   return (
     <div
-      className={cn("relative select-none", stressActive && "animate-[bt-stress-shake_0.35s_ease-in-out_infinite]", className)}
-      style={{ width, height }}
+      className={cn("select-none", stressActive && "animate-[bt-stress-shake_0.35s_ease-in-out_infinite]", className)}
+      style={{ width, maxWidth: "100%" }}
     >
-      <svg
-        viewBox={`0 0 ${VB_W} ${VB_H}`}
-        width="100%"
-        height="100%"
-        className={cn(!isGameActive && !exploded && "bt-anim-paused")}
-      >
-        <defs>
-          <linearGradient id="bt-rope-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={c.ropeTop} />
-            <stop offset="100%" stopColor={c.ropeBottom} />
-          </linearGradient>
-          <linearGradient id="bt-ash-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={c.ash} />
-            <stop offset="100%" stopColor={c.ashDark} />
-          </linearGradient>
-          <radialGradient id="bt-flame-grad">
-            <stop offset="0%" stopColor={c.flameCore} />
-            <stop offset="45%" stopColor={c.flameMid} />
-            <stop offset="100%" stopColor={c.flameOuter} stopOpacity="0" />
-          </radialGradient>
-          <pattern id="bt-rope-twist" width="6" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
-            <rect width="6" height="10" fill="transparent" />
-            <rect width="2.4" height="10" fill="rgba(0,0,0,0.18)" />
-          </pattern>
-        </defs>
-
-        {/* Ancrage fixe en haut */}
-        <circle cx={CX} cy={TOP_Y - 8} r="5" fill={c.bombRim} opacity="0.9" />
-        <rect x={CX - 1.5} y={TOP_Y - 8} width="3" height="10" fill="#555" />
-
-        {/* Cendre : trainee deja consumee, de l'ancrage jusqu'a la flamme */}
-        <rect ref={ashRef} x={CX - ROPE_HALF_W} y={TOP_Y} width={ROPE_HALF_W * 2} height={0} fill="url(#bt-ash-grad)" rx="2" />
-
-        {/* Meche restante : de la flamme jusqu'au sol, se raccourcit quand le temps baisse */}
-        <rect ref={ropeRef} x={CX - ROPE_HALF_W} y={TOP_Y} width={ROPE_HALF_W * 2} height={0} fill="url(#bt-rope-grad)" rx="2" />
-        <rect
-          ref={twistRef}
-          x={CX - ROPE_HALF_W}
-          y={TOP_Y}
-          width={ROPE_HALF_W * 2}
-          height={0}
-          fill="url(#bt-rope-twist)"
-          opacity="0.5"
-        />
-
-        {/* Braises residuelles dans la partie deja brulee */}
-        {emberDots.map((e, i) => (
-          <circle
-            key={i}
-            cx={CX + e.x}
-            cy={TOP_Y + TRACK_LEN * 0.55 + i * 30}
-            r="1.6"
-            fill={c.spark}
-            style={{
-              animation: `bt-ember 1.6s ease-in-out ${e.delay}s infinite`,
-              transformOrigin: "center",
-              transformBox: "fill-box",
-            }}
-          />
-        ))}
-
-        {/* Socle / zone d'explosion */}
-        <ellipse cx={CX} cy={BOTTOM_Y + 26} rx="26" ry="7" fill={c.accent} opacity="0.15" />
-        <ellipse cx={CX} cy={BOTTOM_Y + 26} rx="14" ry="4" fill={c.accent} opacity="0.35" />
-
-        {/* Fusible visible entre la meche et la bombe */}
-        <line ref={fuseLineRef} x1={CX} y1={TOP_Y} x2={CX} y2={TOP_Y} stroke={c.ropeBottom} strokeWidth="2" />
-
-        {/* Flamme, au point de combustion */}
-        <g ref={flameGroupRef} transform={`translate(${CX}, ${TOP_Y})`}>
-          <circle
-            r="10"
-            fill="url(#bt-flame-grad)"
-            style={{
-              animation: `bt-flicker ${stressActive ? 0.22 : 0.4}s ease-in-out infinite`,
-              transformOrigin: "center",
-              transformBox: "fill-box",
-              filter: "blur(0.4px)",
-            }}
-          />
-          <circle
-            r="4.5"
-            fill={c.flameCore}
-            style={{
-              animation: `bt-flicker ${stressActive ? 0.18 : 0.32}s ease-in-out infinite reverse`,
-              transformOrigin: "center",
-              transformBox: "fill-box",
-            }}
-          />
-        </g>
-
-        {/* Bombe */}
-        <g ref={bombGroupRef} transform={`translate(${CX}, ${TOP_Y + BOMB_OFFSET})`}>
-          <circle r={BOMB_RADIUS} fill={c.bombBody} stroke={c.bombRim} strokeWidth="1.6" />
-          <circle cx="-4" cy="-4" r="4" fill="rgba(255,255,255,0.14)" />
-          <rect x="-2" y={-BOMB_RADIUS - 6} width="4" height="6" rx="1.5" fill="#555" />
-          <circle cx="0" cy={-BOMB_RADIUS - 7} r="2.4" fill={c.bombRim} opacity="0.9" />
-        </g>
-      </svg>
-
-      {/* Fumee + etincelles, suit la position de la flamme sans re-render React */}
       <div
-        ref={emitterRef}
-        className={cn("pointer-events-none absolute left-1/2 top-0 h-0 w-0", !isGameActive && !exploded && "bt-anim-paused")}
-      >
-        {smokeParticles.map((p) => (
-          <span
-            key={`smoke-${p.id}`}
-            className="absolute rounded-full"
-            style={
-              {
-                width: p.size + 3,
-                height: p.size + 3,
-                left: -((p.size + 3) / 2),
-                top: -6,
-                background: c.smoke,
-                opacity: 0,
-                "--bt-dx": `${p.dx}px`,
-                animation: `bt-smoke ${1.6 + p.duration}s ease-out ${p.delay}s infinite`,
-              } as React.CSSProperties
-            }
-          />
-        ))}
-        {sparkParticles.map((p) => (
-          <span
-            key={`spark-${p.id}`}
-            className="absolute rounded-full"
-            style={
-              {
-                width: p.size,
-                height: p.size,
-                left: -(p.size / 2),
-                top: 0,
-                background: c.spark,
-                opacity: 0,
-                "--bt-dx": `${p.dx}px`,
-                "--bt-dy": `${p.dy}px`,
-                animation: `bt-spark ${p.duration}s ease-in ${p.delay}s infinite`,
-              } as React.CSSProperties
-            }
-          />
-        ))}
-      </div>
-
-      {/* Lecture du temps, toujours lisible */}
-      <div
-        className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 font-display text-lg font-extrabold tabular-nums"
+        className="pointer-events-none text-center font-display text-lg font-extrabold tabular-nums"
         style={{
           color: stressActive ? c.danger : "inherit",
           animation: stressActive ? "bt-pulse-text 0.6s ease-in-out infinite" : undefined,
@@ -477,41 +333,189 @@ export function BombTimer({
         {formatTime(timeLeft)}
       </div>
 
-      {/* Explosion */}
-      {exploded && (
-        <div className={cn("pointer-events-none absolute inset-0 overflow-visible", "animate-[bt-boom-shake_0.5s_ease-in-out]")}>
-          <div
-            className="absolute rounded-full"
-            style={{
-              left: "50%",
-              top: `${((BOTTOM_Y + 26) / VB_H) * 100}%`,
-              width: 90,
-              height: 90,
-              transform: "translate(-50%, -50%)",
-              background: `radial-gradient(circle, ${c.flameCore} 0%, ${c.flameMid} 35%, ${c.flameOuter} 65%, transparent 75%)`,
-              animation: "bt-flash 0.5s ease-out forwards",
-            }}
+      <div className="relative w-full" style={{ height }}>
+        <svg
+          viewBox={`0 0 ${VB_W} ${VB_H}`}
+          width="100%"
+          height="100%"
+          preserveAspectRatio="none"
+          className={cn(!isGameActive && !exploded && "bt-anim-paused")}
+        >
+          <defs>
+            <linearGradient id="bt-rope-grad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor={c.ropeTop} />
+              <stop offset="100%" stopColor={c.ropeBottom} />
+            </linearGradient>
+            <linearGradient id="bt-ash-grad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor={c.ash} />
+              <stop offset="100%" stopColor={c.ashDark} />
+            </linearGradient>
+            <radialGradient id="bt-flame-grad">
+              <stop offset="0%" stopColor={c.flameCore} />
+              <stop offset="45%" stopColor={c.flameMid} />
+              <stop offset="100%" stopColor={c.flameOuter} stopOpacity="0" />
+            </radialGradient>
+            <pattern id="bt-rope-twist" width="10" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
+              <rect width="10" height="6" fill="transparent" />
+              <rect width="10" height="2.4" fill="rgba(0,0,0,0.18)" />
+            </pattern>
+          </defs>
+
+          {/* Ancrage fixe a gauche */}
+          <circle cx={LEFT_X - 8} cy={CY} r="5" fill={c.bombRim} opacity="0.9" />
+          <rect x={LEFT_X - 18} y={CY - 1.5} width="10" height="3" fill="#555" />
+
+          {/* Cendre : trainee deja consumee, de l'ancrage jusqu'a la flamme */}
+          <rect ref={ashRef} x={LEFT_X} y={CY - ROPE_HALF_H} width={0} height={ROPE_HALF_H * 2} fill="url(#bt-ash-grad)" rx="2" />
+
+          {/* Meche restante : de la flamme jusqu'a la bombe, se raccourcit quand le temps baisse */}
+          <rect ref={ropeRef} x={LEFT_X} y={CY - ROPE_HALF_H} width={0} height={ROPE_HALF_H * 2} fill="url(#bt-rope-grad)" rx="2" />
+          <rect
+            ref={twistRef}
+            x={LEFT_X}
+            y={CY - ROPE_HALF_H}
+            width={0}
+            height={ROPE_HALF_H * 2}
+            fill="url(#bt-rope-twist)"
+            opacity="0.5"
           />
-          {explosionBits.map((p) => (
+
+          {/* Braises residuelles dans la partie deja brulee */}
+          {emberDots.map((e, i) => (
+            <circle
+              key={i}
+              cx={LEFT_X + TRACK_LEN * e.t}
+              cy={CY + e.y}
+              r="1.6"
+              fill={c.spark}
+              style={{
+                animation: `bt-ember 1.6s ease-in-out ${e.delay}s infinite`,
+                transformOrigin: "center",
+                transformBox: "fill-box",
+              }}
+            />
+          ))}
+
+          {/* Socle / zone d'explosion */}
+          <ellipse cx={RIGHT_X + 20} cy={CY} rx="7" ry="24" fill={c.accent} opacity="0.15" />
+          <ellipse cx={RIGHT_X + 20} cy={CY} rx="4" ry="13" fill={c.accent} opacity="0.35" />
+
+          {/* Fusible visible entre la meche et la bombe */}
+          <line ref={fuseLineRef} x1={LEFT_X} y1={CY} x2={LEFT_X} y2={CY} stroke={c.ropeBottom} strokeWidth="2" />
+
+          {/* Flamme, au point de combustion */}
+          <g ref={flameGroupRef} transform={`translate(${LEFT_X}, ${CY})`}>
+            <circle
+              r="10"
+              fill="url(#bt-flame-grad)"
+              style={{
+                animation: `bt-flicker ${stressActive ? 0.22 : 0.4}s ease-in-out infinite`,
+                transformOrigin: "center",
+                transformBox: "fill-box",
+                filter: "blur(0.4px)",
+              }}
+            />
+            <circle
+              r="4.5"
+              fill={c.flameCore}
+              style={{
+                animation: `bt-flicker ${stressActive ? 0.18 : 0.32}s ease-in-out infinite reverse`,
+                transformOrigin: "center",
+                transformBox: "fill-box",
+              }}
+            />
+          </g>
+
+          {/* Bombe */}
+          <g ref={bombGroupRef} transform={`translate(${LEFT_X + BOMB_OFFSET}, ${CY})`}>
+            <circle r={BOMB_RADIUS} fill={c.bombBody} stroke={c.bombRim} strokeWidth="1.6" />
+            <circle cx="-4" cy="-4" r="4" fill="rgba(255,255,255,0.14)" />
+            <rect x="-2" y={-BOMB_RADIUS - 6} width="4" height="6" rx="1.5" fill="#555" />
+            <circle cx="0" cy={-BOMB_RADIUS - 7} r="2.4" fill={c.bombRim} opacity="0.9" />
+          </g>
+        </svg>
+
+        {/* Fumee + etincelles, suit la position de la flamme sans re-render React */}
+        <div
+          ref={emitterRef}
+          className={cn("pointer-events-none absolute top-1/2 h-0 w-0", !isGameActive && !exploded && "bt-anim-paused")}
+          style={{ left: `${(LEFT_X / VB_W) * 100}%` }}
+        >
+          {smokeParticles.map((p) => (
             <span
-              key={`boom-${p.id}`}
+              key={`smoke-${p.id}`}
               className="absolute rounded-full"
               style={
                 {
-                  left: "50%",
-                  top: `${((BOTTOM_Y + 26) / VB_H) * 100}%`,
-                  width: p.size + 2,
-                  height: p.size + 2,
-                  background: p.id % 2 === 0 ? c.flameMid : c.spark,
+                  width: p.size + 3,
+                  height: p.size + 3,
+                  left: -((p.size + 3) / 2),
+                  top: -6,
+                  background: c.smoke,
+                  opacity: 0,
+                  "--bt-dx": `${p.dx}px`,
+                  animation: `bt-smoke ${1.6 + p.duration}s ease-out ${p.delay}s infinite`,
+                } as React.CSSProperties
+              }
+            />
+          ))}
+          {sparkParticles.map((p) => (
+            <span
+              key={`spark-${p.id}`}
+              className="absolute rounded-full"
+              style={
+                {
+                  width: p.size,
+                  height: p.size,
+                  left: -(p.size / 2),
+                  top: 0,
+                  background: c.spark,
+                  opacity: 0,
                   "--bt-dx": `${p.dx}px`,
                   "--bt-dy": `${p.dy}px`,
-                  animation: `bt-particle ${0.5 + p.duration * 0.4}s ease-out ${p.delay * 0.15}s forwards`,
+                  animation: `bt-spark ${p.duration}s ease-in ${p.delay}s infinite`,
                 } as React.CSSProperties
               }
             />
           ))}
         </div>
-      )}
+
+        {/* Explosion */}
+        {exploded && (
+          <div className={cn("pointer-events-none absolute inset-0 overflow-visible", "animate-[bt-boom-shake_0.5s_ease-in-out]")}>
+            <div
+              className="absolute rounded-full"
+              style={{
+                left: `${explosionLeftPct}%`,
+                top: "50%",
+                width: 90,
+                height: 90,
+                transform: "translate(-50%, -50%)",
+                background: `radial-gradient(circle, ${c.flameCore} 0%, ${c.flameMid} 35%, ${c.flameOuter} 65%, transparent 75%)`,
+                animation: "bt-flash 0.5s ease-out forwards",
+              }}
+            />
+            {explosionBits.map((p) => (
+              <span
+                key={`boom-${p.id}`}
+                className="absolute rounded-full"
+                style={
+                  {
+                    left: `${explosionLeftPct}%`,
+                    top: "50%",
+                    width: p.size + 2,
+                    height: p.size + 2,
+                    background: p.id % 2 === 0 ? c.flameMid : c.spark,
+                    "--bt-dx": `${p.dx}px`,
+                    "--bt-dy": `${p.dy}px`,
+                    animation: `bt-particle ${0.5 + p.duration * 0.4}s ease-out ${p.delay * 0.15}s forwards`,
+                  } as React.CSSProperties
+                }
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
