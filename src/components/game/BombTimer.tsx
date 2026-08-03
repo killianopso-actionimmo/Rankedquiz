@@ -216,30 +216,32 @@ export function BombTimer({
   useEffect(() => ensureStylesInjected(), []);
 
   const applyRatioToDom = (ratio: number) => {
-    const markerX = LEFT_X + (1 - ratio) * TRACK_LEN;
+    // La meche part de l'ancrage a DROITE (temps plein) et brule vers la
+    // GAUCHE ou la bombe finit par exploser (temps ecoule).
+    const markerX = RIGHT_X - (1 - ratio) * TRACK_LEN;
 
     if (ashRef.current) {
-      ashRef.current.setAttribute("x", String(LEFT_X));
-      ashRef.current.setAttribute("width", String(Math.max(0, markerX - LEFT_X)));
+      ashRef.current.setAttribute("x", String(markerX));
+      ashRef.current.setAttribute("width", String(Math.max(0, RIGHT_X - markerX)));
     }
     if (ropeRef.current) {
-      ropeRef.current.setAttribute("x", String(markerX));
-      ropeRef.current.setAttribute("width", String(Math.max(0, RIGHT_X - markerX)));
+      ropeRef.current.setAttribute("x", String(LEFT_X));
+      ropeRef.current.setAttribute("width", String(Math.max(0, markerX - LEFT_X)));
     }
     if (twistRef.current) {
-      twistRef.current.setAttribute("x", String(markerX));
-      twistRef.current.setAttribute("width", String(Math.max(0, RIGHT_X - markerX)));
+      twistRef.current.setAttribute("x", String(LEFT_X));
+      twistRef.current.setAttribute("width", String(Math.max(0, markerX - LEFT_X)));
     }
     if (flameGroupRef.current) {
       flameGroupRef.current.setAttribute("transform", `translate(${markerX}, ${CY})`);
     }
-    const bombX = Math.min(markerX + BOMB_OFFSET, RIGHT_X + BOMB_RADIUS * 0.4);
+    const bombX = Math.max(markerX - BOMB_OFFSET, LEFT_X - BOMB_RADIUS * 0.4);
     if (bombGroupRef.current) {
       bombGroupRef.current.setAttribute("transform", `translate(${bombX}, ${CY})`);
     }
     if (fuseLineRef.current) {
       fuseLineRef.current.setAttribute("x1", String(markerX));
-      fuseLineRef.current.setAttribute("x2", String(bombX - BOMB_RADIUS));
+      fuseLineRef.current.setAttribute("x2", String(bombX + BOMB_RADIUS));
     }
     if (emitterRef.current) {
       emitterRef.current.style.left = `${(markerX / VB_W) * 100}%`;
@@ -316,7 +318,7 @@ export function BombTimer({
     []
   );
   const explosionBits = useMemo(() => makeParticles(14, 42, 42, 0.2), []);
-  const explosionLeftPct = ((RIGHT_X + 20) / VB_W) * 100;
+  const explosionLeftPct = (LEFT_X / VB_W) * 100;
 
   return (
     <div
@@ -333,12 +335,11 @@ export function BombTimer({
         {formatTime(timeLeft)}
       </div>
 
-      <div className="relative w-full" style={{ height }}>
+      <div className="relative w-full" style={{ aspectRatio: `${VB_W} / ${VB_H}`, maxHeight: height }}>
         <svg
           viewBox={`0 0 ${VB_W} ${VB_H}`}
           width="100%"
           height="100%"
-          preserveAspectRatio="none"
           className={cn(!isGameActive && !exploded && "bt-anim-paused")}
         >
           <defs>
@@ -361,12 +362,8 @@ export function BombTimer({
             </pattern>
           </defs>
 
-          {/* Ancrage fixe a gauche */}
-          <circle cx={LEFT_X - 8} cy={CY} r="5" fill={c.bombRim} opacity="0.9" />
-          <rect x={LEFT_X - 18} y={CY - 1.5} width="10" height="3" fill="#555" />
-
           {/* Cendre : trainee deja consumee, de l'ancrage jusqu'a la flamme */}
-          <rect ref={ashRef} x={LEFT_X} y={CY - ROPE_HALF_H} width={0} height={ROPE_HALF_H * 2} fill="url(#bt-ash-grad)" rx="2" />
+          <rect ref={ashRef} x={RIGHT_X} y={CY - ROPE_HALF_H} width={0} height={ROPE_HALF_H * 2} fill="url(#bt-ash-grad)" rx="2" />
 
           {/* Meche restante : de la flamme jusqu'a la bombe, se raccourcit quand le temps baisse */}
           <rect ref={ropeRef} x={LEFT_X} y={CY - ROPE_HALF_H} width={0} height={ROPE_HALF_H * 2} fill="url(#bt-rope-grad)" rx="2" />
@@ -384,7 +381,7 @@ export function BombTimer({
           {emberDots.map((e, i) => (
             <circle
               key={i}
-              cx={LEFT_X + TRACK_LEN * e.t}
+              cx={RIGHT_X - TRACK_LEN * e.t}
               cy={CY + e.y}
               r="1.6"
               fill={c.spark}
@@ -396,15 +393,11 @@ export function BombTimer({
             />
           ))}
 
-          {/* Socle / zone d'explosion */}
-          <ellipse cx={RIGHT_X + 20} cy={CY} rx="7" ry="24" fill={c.accent} opacity="0.15" />
-          <ellipse cx={RIGHT_X + 20} cy={CY} rx="4" ry="13" fill={c.accent} opacity="0.35" />
-
           {/* Fusible visible entre la meche et la bombe */}
-          <line ref={fuseLineRef} x1={LEFT_X} y1={CY} x2={LEFT_X} y2={CY} stroke={c.ropeBottom} strokeWidth="2" />
+          <line ref={fuseLineRef} x1={RIGHT_X} y1={CY} x2={RIGHT_X} y2={CY} stroke={c.ropeBottom} strokeWidth="2" />
 
           {/* Flamme, au point de combustion */}
-          <g ref={flameGroupRef} transform={`translate(${LEFT_X}, ${CY})`}>
+          <g ref={flameGroupRef} transform={`translate(${RIGHT_X}, ${CY})`}>
             <circle
               r="10"
               fill="url(#bt-flame-grad)"
@@ -427,7 +420,7 @@ export function BombTimer({
           </g>
 
           {/* Bombe */}
-          <g ref={bombGroupRef} transform={`translate(${LEFT_X + BOMB_OFFSET}, ${CY})`}>
+          <g ref={bombGroupRef} transform={`translate(${RIGHT_X - BOMB_OFFSET}, ${CY})`}>
             <circle r={BOMB_RADIUS} fill={c.bombBody} stroke={c.bombRim} strokeWidth="1.6" />
             <circle cx="-4" cy="-4" r="4" fill="rgba(255,255,255,0.14)" />
             <rect x="-2" y={-BOMB_RADIUS - 6} width="4" height="6" rx="1.5" fill="#555" />
@@ -439,7 +432,7 @@ export function BombTimer({
         <div
           ref={emitterRef}
           className={cn("pointer-events-none absolute top-1/2 h-0 w-0", !isGameActive && !exploded && "bt-anim-paused")}
-          style={{ left: `${(LEFT_X / VB_W) * 100}%` }}
+          style={{ left: `${(RIGHT_X / VB_W) * 100}%` }}
         >
           {smokeParticles.map((p) => (
             <span
