@@ -9,27 +9,37 @@ import { GameHeader } from "@/components/game/GameHeader";
 import { BombTimer } from "@/components/game/BombTimer";
 import { QuestionCard } from "@/components/game/QuestionCard";
 import { AnswerButton, type AnswerState } from "@/components/game/AnswerButton";
-import { GameOverScreen } from "@/components/game/GameOverScreen";
+import { PostGameScreen } from "@/components/game/PostGameScreen";
 import { DifficultySelector } from "@/components/DifficultySelector";
 import { fireFlameBurst } from "@/lib/flames";
 import { useStoredXp, setStoredXp } from "@/lib/storage";
-import { calculateXpGain } from "@/lib/xp-gain";
+import { calculateProgressionXp, toDbDifficulty } from "@/lib/xp-gain";
 import { shuffleQuestionChoices } from "@/data/questions";
-import { filterQuestionsByMode, QuestionSessionManager } from "@/services/questions";
+import { filterQuestionsByMode } from "@/services/questions";
+import { submitGame } from "@/services/userStats";
 import { useQuizSounds } from "@/hooks/useQuizSounds";
 import type { QcmQuestion } from "@/types/quiz";
+import type { GameSubmitResult } from "@/types/user";
 
 const START_SECONDS = 60;
 const CORRECT_BONUS = 3;
 const WRONG_PENALTY = -2;
+
+/**
+ * Points par bonne reponse. Cale la formule XP sur l'echelle voulue :
+ * base_xp = score / questions_repondues = 40 x taux_de_reussite.
+ * Une partie a 8/10 rapporte donc 32 XP de base, avant bonus.
+ */
+const POINTS_PER_CORRECT = 40;
+
 const IDLE_STATES: AnswerState[] = ["idle", "idle", "idle", "idle"];
 
 function buildQueue(diff?: 1 | 2 | 3) {
   let questions = filterQuestionsByMode(QCM_QUESTIONS, "time-attack");
   if (diff) {
-    questions = questions.filter(q => q.difficulty === diff);
+    questions = questions.filter((q) => q.difficulty === diff);
   }
-  return shuffle(questions).map(q => shuffleQuestionChoices(q));
+  return shuffle(questions).map((q) => shuffleQuestionChoices(q));
 }
 
 export default function TimeAttackPage() {
@@ -39,25 +49,48 @@ export default function TimeAttackPage() {
   const [queue, setQueue] = useState<QcmQuestion[]>([]);
   const [qIndex, setQIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [answeredCount, setAnsweredCount] = useState(0);
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
   const [answerStates, setAnswerStates] = useState<AnswerState[]>(IDLE_STATES);
   const [locked, setLocked] = useState(false);
   const [gameOver, setGameOver] = useState(false);
 
-  const startGame = useCallback((diff: 1 | 2 | 3 | "random") => {
-    const questionDifficulty = diff !== "random" ? diff : undefined;
-    setQueue(buildQueue(questionDifficulty));
-    setQIndex(0);
-    setScore(0);
-    setStreak(0);
-    setBestStreak(0);
-    setAnswerStates(IDLE_STATES);
-    setLocked(false);
-    setGameOver(false);
-    setDifficulty(diff);
-    sounds.playStart();
-  }, [sounds]);
+  const [result, setResult] = useState<GameSubmitResult | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Chronometrage : instant d'affichage de la question courante, et cumul du
+  // temps de reflexion. Des refs et non des states : la valeur est lue dans des
+  // callbacks, elle ne doit declencher aucun rendu.
+  const questionShownAt = useRef<number>(0);
+  const totalThinkMs = useRef<number>(0);
+  const submittedRef = useRef(false);
+
+  const startGame = useCallback(
+    (diff: 1 | 2 | 3 | "random") => {
+      const questionDifficulty = diff !== "random" ? diff : undefined;
+      setQueue(buildQueue(questionDifficulty));
+      setQIndex(0);
+      setScore(0);
+      setCorrectCount(0);
+      setAnsweredCount(0);
+      setStreak(0);
+      setBestStreak(0);
+      setAnswerStates(IDLE_STATES);
+      setLocked(false);
+      setGameOver(false);
+      setResult(null);
+      setSubmitError(null);
+      totalThinkMs.current = 0;
+      questionShownAt.current = Date.now();
+      submittedRef.current = false;
+      setDifficulty(diff);
+      sounds.playStart();
+    },
+    [sounds],
+  );
 
   const currentQuestion = queue[qIndex % queue.length];
 
@@ -71,6 +104,11 @@ export default function TimeAttackPage() {
       if (locked || gameOver) return;
       setLocked(true);
 
+      // Mesure avant tout traitement : c'est le temps de reflexion reel.
+      const elapsed = Date.now() - questionShownAt.current;
+      totalThinkMs.current += elapsed;
+      setAnsweredCount((n) => n + 1);
+
       const isCorrect = choiceIndex === currentQuestion.answerIndex;
       const nextStates = currentQuestion.choices.map((_, i) => {
         if (i === choiceIndex) return isCorrect ? "correct" : "wrong";
@@ -82,7 +120,8 @@ export default function TimeAttackPage() {
       if (isCorrect) {
         sounds.playCorrect();
         addSeconds(CORRECT_BONUS);
-        setScore((s) => s + 1);
+        setScore((s) => s + POINTS_PER_CORRECT);
+        setCorrectCount((c) => c + 1);
         setStreak((s) => {
           const next = s + 1;
           setBestStreak((b) => Math.max(b, next));
@@ -106,10 +145,13 @@ export default function TimeAttackPage() {
         });
         setAnswerStates(IDLE_STATES);
         setLocked(false);
+        // Le chrono de la question suivante ne demarre qu'a son affichage,
+        // sinon les 650 ms de transition seraient comptees comme reflexion.
+        questionShownAt.current = Date.now();
         sounds.playNext();
       }, 650);
     },
-    [locked, gameOver, currentQuestion, addSeconds, queue.length, sounds]
+    [locked, gameOver, currentQuestion, addSeconds, queue.length, sounds],
   );
 
   const handleRetry = () => {
@@ -117,44 +159,79 @@ export default function TimeAttackPage() {
     reset(START_SECONDS);
   };
 
-  const xpSavedRef = useRef(false);
-  const xpGained = gameOver ? calculateXpGain(score, queue.length, "time-attack") : 0;
-  const endXp = startXp + xpGained;
+  const avgTimePerQuestion = answeredCount > 0 ? totalThinkMs.current / answeredCount / 1000 : 0;
 
+  // Enregistrement de la partie. submittedRef empeche le double envoi que
+  // provoquerait un re-rendu pendant l'appel reseau.
   useEffect(() => {
-    if (gameOver && !xpSavedRef.current) {
-      xpSavedRef.current = true;
-      const timer = setTimeout(() => {
-        setStoredXp(endXp);
-      }, 2000);
-      return () => clearTimeout(timer);
+    if (!gameOver || submittedRef.current || difficulty === null) return;
+    submittedRef.current = true;
+
+    // L'XP local (localStorage) alimente le selecteur de difficulte et l'entete
+    // d'accueil : on le met a jour meme si le joueur n'est pas connecte.
+    const estimated = calculateProgressionXp({
+      score,
+      correctAnswers: correctCount,
+      totalQuestions: answeredCount,
+      longestStreak: bestStreak,
+      avgTimePerQuestion,
+      difficulty: toDbDifficulty(difficulty),
+    });
+    setStoredXp(startXp + estimated);
+
+    if (answeredCount === 0) {
+      setSubmitError("Aucune question répondue.");
+      return;
     }
-  }, [gameOver, endXp]);
+
+    setSubmitting(true);
+    submitGame({
+      mode: "time_attack",
+      score,
+      correctAnswers: correctCount,
+      totalQuestions: answeredCount,
+      longestStreak: bestStreak,
+      avgTimePerQuestion,
+      difficulty: toDbDifficulty(difficulty),
+    }).then((res) => {
+      setSubmitting(false);
+      if (res.data) {
+        setResult(res.data);
+        // La valeur serveur fait foi : on aligne le cache local dessus.
+        setStoredXp(res.data.total_xp);
+      } else {
+        setSubmitError(res.error ?? "Partie non enregistrée.");
+      }
+    });
+  }, [
+    gameOver,
+    difficulty,
+    score,
+    correctCount,
+    answeredCount,
+    bestStreak,
+    avgTimePerQuestion,
+    startXp,
+  ]);
 
   if (difficulty === null) {
     return (
-      <DifficultySelector
-        currentXp={startXp}
-        onSelectDifficulty={startGame}
-        title="Time Attack"
-      />
+      <DifficultySelector currentXp={startXp} onSelectDifficulty={startGame} title="Time Attack" />
     );
   }
 
   if (gameOver) {
     return (
-      <GameOverScreen
-        title="Temps écoulé !"
-        stats={[
-          { label: "Score", value: `${score}` },
-          { label: "Meilleure série", value: `${bestStreak}` },
-        ]}
-        onRetry={handleRetry}
+      <PostGameScreen
         score={score}
-        mode="time-attack"
-        startXp={startXp}
-        endXp={endXp}
-        xpGained={xpGained}
+        correctAnswers={correctCount}
+        totalAnswered={answeredCount}
+        longestStreak={bestStreak}
+        avgTimePerQuestion={avgTimePerQuestion}
+        result={result}
+        submitting={submitting}
+        submitError={submitError}
+        onRetry={handleRetry}
       />
     );
   }
@@ -183,7 +260,7 @@ export default function TimeAttackPage() {
           questionKey={currentQuestion.id}
           category={currentQuestion.category}
           question={currentQuestion.question}
-          index={qIndex}
+          index={answeredCount}
           total={queue.length}
         />
 
