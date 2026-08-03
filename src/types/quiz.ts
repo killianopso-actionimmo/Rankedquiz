@@ -4,7 +4,16 @@ export type CategoryId =
   | "sciences"
   | "sport"
   | "cinema"
-  | "culture-generale";
+  | "culture-generale"
+  // Categories introduites par le pool Time Attack (900 questions).
+  | "popculture"
+  | "nature"
+  | "gastronomie"
+  | "musique"
+  | "litterature"
+  | "langues"
+  | "art"
+  | "technologie";
 
 export interface Category {
   id: CategoryId;

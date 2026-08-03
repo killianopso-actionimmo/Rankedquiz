@@ -1,4 +1,5 @@
 import type { CategoryId, GameModeId, JetpunkRound, QcmQuestion } from "@/types/quiz";
+import { CATEGORIES } from "./categories";
 import timeAttackQuestionsData from "./time-attack-questions.json";
 
 export type { QcmQuestion };
@@ -21,6 +22,13 @@ export function shuffleQuestionChoices(q: QcmQuestion): QcmQuestion {
 }
 
 const OTHER_MODES: GameModeId[] = ["jetpunk", "ranked", "thematique", "duel"];
+
+const KNOWN_CATEGORY_IDS = new Set<string>(CATEGORIES.map((c) => c.id));
+
+/** Valide une categorie venant du JSON, sinon retombe sur culture-generale. */
+function toCategoryId(raw: string): CategoryId {
+  return KNOWN_CATEGORY_IDS.has(raw) ? (raw as CategoryId) : "culture-generale";
+}
 
 export const QCM_QUESTIONS: QcmQuestion[] = [
   // Géographie
@@ -275,12 +283,14 @@ export const QCM_QUESTIONS: QcmQuestion[] = [
   { id: "cul-39", category: "culture-generale", question: "Quel jeu de société, dérivé du chaturanga indien, est l'un des plus anciens connus ?", choices: ["Échecs", "Dames", "Go", "Backgammon"], answerIndex: 0, difficulty: 2, allowedModes: OTHER_MODES },
   { id: "cul-40", category: "culture-generale", question: "Quelle est la boisson la plus consommée au monde après l'eau ?", choices: ["Café", "Thé", "Jus d'orange", "Lait"], answerIndex: 1, difficulty: 2, allowedModes: OTHER_MODES },
 
-  // TIME ATTACK POOL - 45 Questions (16 easy, 18 medium, 12 hard)
-  // Easy (16 questions - 35%)
-  // TIME ATTACK POOL - 3000 Questions (1000 easy, 1000 medium, 1000 hard)
+  // TIME ATTACK POOL - 900 questions (300 easy, 300 medium, 300 hard)
+  // Source : ./time-attack-questions.json, exclusivement pour le mode Time Attack.
   ...Object.values(timeAttackQuestionsData).flat().map(q => ({
     id: q.id,
-    category: (q.category as CategoryId) || "culture-generale",
+    // Une categorie absente de CATEGORIES ferait disparaitre le badge
+    // (CategoryBadge renvoie null si getCategory echoue) : on retombe donc
+    // explicitement sur culture-generale plutot que de caster a l'aveugle.
+    category: toCategoryId(q.category),
     question: q.question,
     choices: q.choices as [string, string, string, string],
     answerIndex: q.answerIndex,
