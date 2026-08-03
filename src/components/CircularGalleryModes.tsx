@@ -50,6 +50,17 @@ const MAX_THROW_CARDS = 1.5;
 const SETTLE_MS = 130;
 
 /**
+ * Carte centrée à l'arrivée sur la page.
+ *
+ * À scrollLeft 0 c'est la première carte qui est centrée, et tout le padding
+ * gauche — une demi-largeur de viewport — reste vide. En démarrant sur la
+ * deuxième carte, la galerie s'ouvre avec une carte de chaque côté.
+ * Recherché par id : un réordonnancement de GAME_MODES ne doit pas déplacer
+ * silencieusement le point de départ.
+ */
+const INITIAL_MODE_ID = "jetpunk";
+
+/**
  * Galerie circulaire des modes de jeu.
  *
  * Le scroll est natif (overflow-x + scroll-snap) : sur mobile on hérite du
@@ -163,6 +174,17 @@ export function CircularGalleryModes() {
     if (!scroller) return;
 
     measure();
+
+    // Positionnement initial en écriture directe : scrollTo({behavior:"smooth"})
+    // ferait défiler la galerie sous les yeux de l'utilisateur au chargement.
+    const startIndex = GAME_MODES.findIndex((m) => m.id === INITIAL_MODE_ID);
+    const { centers, half } = metricsRef.current;
+    if (startIndex > 0 && centers[startIndex] !== undefined) {
+      scroller.scrollLeft = centers[startIndex] - half;
+      activeRef.current = startIndex;
+      setActive(startIndex);
+    }
+
     applyGeometry();
 
     const ro = new ResizeObserver(() => {
@@ -322,6 +344,13 @@ export function CircularGalleryModes() {
         .cg-logo{height:5.5rem;display:flex;align-items:center;justify-content:center}
         @media (min-width:640px){.cg-logo{height:6.5rem}}
         .cg-logo>svg{height:100%;width:auto}
+
+        /* Les six logos cumulent 29 animations infinies. Sur mobile le carrousel
+           n'en montre qu'une ou deux a la fois, mais sur grand ecran toutes les
+           cartes tiennent a l'ecran et tout tourne en meme temps. On ne laisse
+           animer que la carte centree : les voisines sont de toute facon
+           reduites et attenuees a 42%, leur mouvement ne se lit pas. */
+        .cg-slot:not([data-active="true"]) .cg-logo *{animation-play-state:paused}
 
         .cg-badge{position:absolute;top:-.6rem;right:1rem;border-radius:999px;
           padding:.15rem .55rem;font-size:.625rem;font-weight:800;letter-spacing:.04em;

@@ -12,6 +12,31 @@ const HALOS = [
 ];
 
 /**
+ * Degrade a estompement progressif, sans filtre.
+ *
+ * Ces halos etaient rendus par un `blur(100px)` applique a un degrade simple.
+ * Un flou de 100px deborde d'environ 300px de chaque cote : les trois halos
+ * representaient ~2.9 megapixels de texture filtree a composer en permanence,
+ * pour un resultat qu'un degrade multi-arrets reproduit a l'identique. Un
+ * simple `transparent` en fin de course ne suffit pas (l'interpolation passe
+ * par du noir premultiplie et laisse un bord de cercle visible) : d'ou les
+ * paliers intermediaires et l'alpha 0 explicite.
+ */
+/** Agrandissement compensant la diffusion que produisait le flou. */
+const HALO_SCALE = 1.5;
+
+function haloGradient(color: string): string {
+  return (
+    `radial-gradient(circle, ` +
+    `rgb(${color} / .14) 0%, ` +
+    `rgb(${color} / .10) 25%, ` +
+    `rgb(${color} / .05) 48%, ` +
+    `rgb(${color} / .02) 68%, ` +
+    `rgb(${color} / 0) 85%)`
+  );
+}
+
+/**
  * Halos d'ambiance avec derive au scroll.
  *
  * Les halos sont en `fixed`, donc un simple `scroll * drift` suffit a creer la
@@ -32,7 +57,9 @@ export function AmbientBackground() {
         if (!el) continue;
 
         const offset = Math.max(-180, Math.min(180, scroll * HALOS[i].drift));
-        el.style.transform = `translate3d(0, ${offset.toFixed(2)}px, 0)`;
+        // Le scale fait partie de la meme propriete : l'omettre ici remettrait
+        // les halos a leur taille d'origine des le premier evenement de scroll.
+        el.style.transform = `translate3d(0, ${offset.toFixed(2)}px, 0) scale(${HALO_SCALE})`;
       }
     },
     [prefersReduced]
@@ -49,11 +76,13 @@ export function AmbientBackground() {
           ref={(node) => {
             layers.current[i] = node;
           }}
-          className={`absolute animate-breath rounded-full blur-[100px] ${halo.className}`}
+          className={`absolute animate-breath rounded-full ${halo.className}`}
           style={{
             // Volontairement discret : le fond de page doit rester #F9FAFB,
             // les halos ne font que le teinter.
-            background: `radial-gradient(circle, rgb(${halo.color} / 0.16), transparent 70%)`,
+            background: haloGradient(halo.color),
+            // HALO_SCALE compense l'etalement que produisait le flou.
+            transform: `translate3d(0,0,0) scale(${HALO_SCALE})`,
             willChange: "transform",
           }}
         />
