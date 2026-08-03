@@ -90,6 +90,8 @@ const RIGHT_X = 430;
 const TRACK_LEN = RIGHT_X - LEFT_X;
 const BOMB_RADIUS = 15;
 const BOMB_OFFSET = 18;
+/** Position fixe de la bombe : elle ne bouge plus avec le temps, seule la meche brule. */
+const BOMB_FIXED_X = LEFT_X - BOMB_RADIUS * 0.4;
 const SMOOTHING = 0.16;
 const CONVERGE_EPSILON = 0.0006;
 
@@ -154,6 +156,19 @@ function ensureStylesInjected() {
 @keyframes bt-pulse-text {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.55; }
+}
+@keyframes bt-bomb-shake {
+  0%   { transform: translate(0, 0); }
+  10%  { transform: translate(calc(var(--bt-amp) * -1), calc(var(--bt-amp) * 0.6)); }
+  20%  { transform: translate(calc(var(--bt-amp) * 0.8), calc(var(--bt-amp) * -0.9)); }
+  30%  { transform: translate(calc(var(--bt-amp) * -0.6), calc(var(--bt-amp) * -0.4)); }
+  40%  { transform: translate(calc(var(--bt-amp) * 1), calc(var(--bt-amp) * 0.5)); }
+  50%  { transform: translate(calc(var(--bt-amp) * -0.9), calc(var(--bt-amp) * 0.8)); }
+  60%  { transform: translate(calc(var(--bt-amp) * 0.5), calc(var(--bt-amp) * -0.7)); }
+  70%  { transform: translate(calc(var(--bt-amp) * -1), calc(var(--bt-amp) * -0.3)); }
+  80%  { transform: translate(calc(var(--bt-amp) * 0.7), calc(var(--bt-amp) * 0.9)); }
+  90%  { transform: translate(calc(var(--bt-amp) * -0.4), calc(var(--bt-amp) * 0.6)); }
+  100% { transform: translate(0, 0); }
 }
 .bt-anim-paused * { animation-play-state: paused !important; }
 `;
@@ -235,13 +250,9 @@ export function BombTimer({
     if (flameGroupRef.current) {
       flameGroupRef.current.setAttribute("transform", `translate(${markerX}, ${CY})`);
     }
-    const bombX = Math.max(markerX - BOMB_OFFSET, LEFT_X - BOMB_RADIUS * 0.4);
-    if (bombGroupRef.current) {
-      bombGroupRef.current.setAttribute("transform", `translate(${bombX}, ${CY})`);
-    }
     if (fuseLineRef.current) {
       fuseLineRef.current.setAttribute("x1", String(markerX));
-      fuseLineRef.current.setAttribute("x2", String(bombX + BOMB_RADIUS));
+      fuseLineRef.current.setAttribute("x2", String(BOMB_FIXED_X + BOMB_RADIUS));
     }
     if (emitterRef.current) {
       emitterRef.current.style.left = `${(markerX / VB_W) * 100}%`;
@@ -306,6 +317,20 @@ export function BombTimer({
 
   const stressActive =
     !exploded && (forceStress || (isGameActive && timeLeft > 0 && timeLeft <= Math.max(5, totalTime * stressThreshold)));
+
+  // Tremblement de la bombe : demarre a 15s, s'intensifie a l'approche de 0.
+  const bombShakeTier =
+    !exploded && isGameActive && timeLeft > 0
+      ? timeLeft <= 5
+        ? "violent"
+        : timeLeft <= 10
+          ? "medium"
+          : timeLeft <= 15
+            ? "light"
+            : null
+      : null;
+  const bombShakeAmp = bombShakeTier === "violent" ? 13 : bombShakeTier === "medium" ? 6.5 : bombShakeTier === "light" ? 2.5 : 0;
+  const bombShakeDuration = bombShakeTier === "violent" ? 0.07 : bombShakeTier === "medium" ? 0.08 : 0.09;
 
   const smokeParticles = useMemo(() => makeParticles(4, 5, 1, 0.3), []);
   const sparkParticles = useMemo(() => makeParticles(6, 16, 22, 1.1), []);
@@ -394,7 +419,15 @@ export function BombTimer({
           ))}
 
           {/* Fusible visible entre la meche et la bombe */}
-          <line ref={fuseLineRef} x1={RIGHT_X} y1={CY} x2={RIGHT_X} y2={CY} stroke={c.ropeBottom} strokeWidth="2" />
+          <line
+            ref={fuseLineRef}
+            x1={RIGHT_X}
+            y1={CY}
+            x2={BOMB_FIXED_X + BOMB_RADIUS}
+            y2={CY}
+            stroke={c.ropeBottom}
+            strokeWidth="2"
+          />
 
           {/* Flamme, au point de combustion */}
           <g ref={flameGroupRef} transform={`translate(${RIGHT_X}, ${CY})`}>
@@ -419,12 +452,29 @@ export function BombTimer({
             />
           </g>
 
-          {/* Bombe */}
-          <g ref={bombGroupRef} transform={`translate(${RIGHT_X - BOMB_OFFSET}, ${CY})`}>
-            <circle r={BOMB_RADIUS} fill={c.bombBody} stroke={c.bombRim} strokeWidth="1.6" />
-            <circle cx="-4" cy="-4" r="4" fill="rgba(255,255,255,0.14)" />
-            <rect x="-2" y={-BOMB_RADIUS - 6} width="4" height="6" rx="1.5" fill="#555" />
-            <circle cx="0" cy={-BOMB_RADIUS - 7} r="2.4" fill={c.bombRim} opacity="0.9" />
+          {/* Bombe — position fixe, tremble seule quand le temps devient critique */}
+          <g transform={`translate(${BOMB_FIXED_X}, ${CY})`}>
+            <g
+              ref={bombGroupRef}
+              style={
+                bombShakeTier
+                  ? ({
+                      "--bt-amp": `${bombShakeAmp}px`,
+                      animation: `bt-bomb-shake ${bombShakeDuration}s linear infinite`,
+                    } as React.CSSProperties)
+                  : undefined
+              }
+            >
+              <circle
+                r={BOMB_RADIUS}
+                fill={c.bombBody}
+                stroke={bombShakeTier === "violent" ? c.danger : c.bombRim}
+                strokeWidth="1.6"
+              />
+              <circle cx="-4" cy="-4" r="4" fill="rgba(255,255,255,0.14)" />
+              <rect x="-2" y={-BOMB_RADIUS - 6} width="4" height="6" rx="1.5" fill="#555" />
+              <circle cx="0" cy={-BOMB_RADIUS - 7} r="2.4" fill={c.bombRim} opacity="0.9" />
+            </g>
           </g>
         </svg>
 
