@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Mail, Lock, User } from "lucide-react";
 import { NeonButton } from "@/components/ui/NeonButton";
@@ -8,7 +9,7 @@ import { usePlayerName, setPlayerName } from "@/hooks/usePlayerName";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
-type AuthMode = "login" | "signup" | "profile";
+type AuthMode = "login" | "signup" | "profile" | "reset";
 
 export function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [mode, setMode] = useState<AuthMode>("profile");
@@ -18,7 +19,8 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { user, signUp, signIn, signOut, updateProfile } = useAuth();
+  const [success, setSuccess] = useState("");
+  const { user, signUp, signIn, signOut, updateProfile, resetPassword } = useAuth();
 
   useEffect(() => {
     if (user) {
@@ -28,6 +30,32 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
       setError("");
     }
   }, [user]);
+
+  // Les messages ne doivent pas survivre a un changement d'onglet.
+  useEffect(() => {
+    setError("");
+    setSuccess("");
+  }, [mode]);
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      setError("Renseigne ton email.");
+      return;
+    }
+    setError("");
+    setSuccess("");
+    setLoading(true);
+    const { error: err } = await resetPassword(email.trim());
+    setLoading(false);
+    if (err) {
+      setError(err);
+      return;
+    }
+    // Message volontairement neutre : confirmer qu'un compte existe pour cet
+    // email permettrait d'enumerer les comptes inscrits.
+    setSuccess("Si un compte existe pour cet email, un lien vient d'etre envoye.");
+  };
 
   const handleSaveName = async () => {
     if (playerName.trim()) {
@@ -40,9 +68,13 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
-    const { error: err } = await signUp(email, password, playerName);
+    const { error: err, needsConfirmation } = await signUp(email, password, playerName);
     if (err) setError(err);
+    else if (needsConfirmation) {
+      setSuccess("Compte cree ! Confirme ton email pour te connecter (verifie tes spams).");
+    }
     setLoading(false);
   };
 
@@ -85,7 +117,13 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
           >
             <div className="mb-5 flex items-center justify-between">
               <h2 className="font-display text-xl font-extrabold leading-snug text-ink">
-                {mode === "login" ? "Connexion" : "Inscription"}
+                {mode === "profile"
+                  ? "Profil"
+                  : mode === "login"
+                    ? "Connexion"
+                    : mode === "signup"
+                      ? "Inscription"
+                      : "Mot de passe oublie"}
               </h2>
               <button
                 type="button"
@@ -153,17 +191,55 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
                   Enregistrer
                 </NeonButton>
                 {user && (
-                  <NeonButton
-                    type="button"
-                    variant="primary"
-                    size="lg"
-                    className="mt-2 w-full"
-                    onClick={handleSignOut}
-                    disabled={loading}
-                  >
-                    Déconnexion
-                  </NeonButton>
+                  <>
+                    <Link href="/profile" onClick={onClose} className="w-full">
+                      <NeonButton type="button" variant="ghost" size="lg" className="w-full">
+                        Mon profil & statistiques
+                      </NeonButton>
+                    </Link>
+                    <NeonButton
+                      type="button"
+                      variant="primary"
+                      size="lg"
+                      className="mt-2 w-full"
+                      onClick={handleSignOut}
+                      disabled={loading}
+                    >
+                      Déconnexion
+                    </NeonButton>
+                  </>
                 )}
+              </form>
+            ) : mode === "reset" ? (
+              <form className="flex flex-col gap-3" onSubmit={handleResetPassword}>
+                <p className="text-xs text-ink-soft">
+                  Entre ton email : tu recevras un lien pour choisir un nouveau mot de passe.
+                </p>
+                <label className="flex items-center gap-3 rounded-sm border border-line bg-background-sunken px-4 py-3 focus-within:border-primary">
+                  <Mail className="h-4 w-4 shrink-0 text-ink-faint" />
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-transparent text-sm text-ink placeholder:text-ink-faint focus:outline-none"
+                  />
+                </label>
+
+                {error && <p className="text-xs text-danger">{error}</p>}
+                {success && <p className="text-xs text-success">{success}</p>}
+
+                <NeonButton type="submit" variant="primary" size="lg" className="mt-2 w-full" disabled={loading}>
+                  {loading ? "Envoi..." : "Envoyer le lien"}
+                </NeonButton>
+                <button
+                  type="button"
+                  onClick={() => setMode("login")}
+                  className="mt-1 text-xs text-ink-soft underline hover:text-ink"
+                >
+                  Retour a la connexion
+                </button>
               </form>
             ) : (
               <form className="flex flex-col gap-3" onSubmit={mode === "signup" ? handleSignUp : handleSignIn}>
@@ -204,10 +280,21 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
                 </label>
 
                 {error && <p className="text-xs text-danger">{error}</p>}
+                {success && <p className="text-xs text-success">{success}</p>}
 
                 <NeonButton type="submit" variant="primary" size="lg" className="mt-2 w-full" disabled={loading}>
                   {loading ? "Chargement..." : mode === "login" ? "Se connecter" : "Créer mon compte"}
                 </NeonButton>
+
+                {mode === "login" && (
+                  <button
+                    type="button"
+                    onClick={() => setMode("reset")}
+                    className="mt-1 text-xs text-ink-soft underline hover:text-ink"
+                  >
+                    Mot de passe oublié ?
+                  </button>
+                )}
               </form>
             )}
           </motion.div>
