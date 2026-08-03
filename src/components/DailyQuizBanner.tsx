@@ -17,7 +17,7 @@ function formatDayLabel(): string {
 }
 
 export function DailyQuizBanner() {
-  const { completedToday } = useDailyStreak();
+  const { completedToday, streak } = useDailyStreak();
   const countdown = useMidnightCountdown(completedToday);
 
   return (
@@ -29,6 +29,7 @@ export function DailyQuizBanner() {
       <QuizDuJourBook
         href="/play/daily"
         disabled={completedToday}
+        streak={streak}
         label={completedToday ? (countdown ?? "--:--:--") : formatDayLabel()}
       />
     </section>

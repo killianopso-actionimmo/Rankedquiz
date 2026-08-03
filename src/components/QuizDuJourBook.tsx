@@ -7,14 +7,19 @@ import { motion, useAnimationControls, useReducedMotion } from "framer-motion";
 /**
  * Livre 3D qui EST le bouton du Quiz du Jour.
  *
- * Ouverture "portes de saloon" : les deux couvertures pivotent autour du dos
- * central (transform-origin sur le bord interieur) et liberent l'interieur.
- * Le survol est gere en CSS pur (aucun state React, donc aucun rendu par frame) ;
- * seul le rebond du clic passe par framer-motion, qui doit sequencer la
- * navigation apres l'animation.
+ * Visuel importe du projet Claude Design "Icone Quiz du jour animee" : deux
+ * couvertures orange a charnieres exterieures qui s'ecartent en portes de
+ * saloon, dos cyan lumineux, signet cranté, interieur qui se revele.
  *
- * C'est un vrai <button> : focus clavier, Espace/Entree, aria-label. L'ouverture
- * se declenche aussi sur :focus-visible pour ne pas reserver l'effet a la souris.
+ * La geometrie du design est exprimee en pixels absolus sur une base de
+ * 320x356. Plutot que de recalculer chaque valeur, le livre est mis a
+ * l'echelle d'un bloc via --qdj-s : les proportions restent exactes a toutes
+ * les tailles.
+ *
+ * Interaction : le design d'origine ouvre/ferme au clic. Ici le clic navigue
+ * (c'est l'entree du mode Quiz du Jour), l'ouverture se fait au survol et au
+ * focus clavier. Elle est aussi forcee pendant le rebond du clic, sinon sur
+ * mobile — ou il n'y a pas de survol — le livre partirait sans jamais s'ouvrir.
  */
 
 /** Whoosh synthetise a la volee : bruit blanc filtre, zero asset a telecharger. */
@@ -56,10 +61,12 @@ export type QuizDuJourBookProps = {
   href?: string;
   /** Remplace la navigation par un callback (scroll vers une section, modale...). */
   onClick?: () => void;
-  /** Texte sur la couverture (2 lignes max). */
+  /** Texte sur la couverture droite : date du jour, ou compte a rebours si termine. */
   label?: string;
   /** Livre verrouille : plus d'ouverture ni de clic. */
   disabled?: boolean;
+  /** Serie en cours, affichee a l'interieur. Masquee si 0. */
+  streak?: number;
   /** Whoosh au clic. */
   sound?: boolean;
   className?: string;
@@ -70,6 +77,7 @@ export function QuizDuJourBook({
   onClick,
   label = "Quiz",
   disabled = false,
+  streak = 0,
   sound = true,
   className,
 }: QuizDuJourBookProps) {
@@ -107,6 +115,10 @@ export function QuizDuJourBook({
     setBusy(false);
   }, [disabled, sound, onClick, router, href, prefersReduced, controls]);
 
+  // Le compte a rebours a besoin de chiffres alignes et sans interlettrage :
+  // "12:04:59" en letter-spacing .16em deborde la couverture.
+  const labelIsCountdown = disabled;
+
   return (
     <motion.button
       type="button"
@@ -115,95 +127,218 @@ export function QuizDuJourBook({
       onPointerEnter={() => router.prefetch(href)}
       disabled={disabled || busy}
       aria-busy={busy}
+      data-open={busy || undefined}
       aria-label={disabled ? "Quiz du jour déjà terminé" : "Ouvrir le quiz du jour"}
       className={`qdj-btn${className ? ` ${className}` : ""}`}
     >
       <style>{`
-        .qdj-btn{--qdj-w:100px;--qdj-h:133px;background:none;border:0;padding:0;cursor:pointer;perspective:900px;display:block}
+        .qdj-btn{--qdj-s:.62;--qdj-swing:112deg;background:none;border:0;padding:0;cursor:pointer;display:block;
+          width:calc(320px * var(--qdj-s));height:calc(356px * var(--qdj-s))}
         .qdj-btn:disabled{cursor:default}
-        .qdj-btn:focus-visible{outline:2px solid #00FFFF;outline-offset:10px;border-radius:8px}
-        @media (min-width:640px){.qdj-btn{--qdj-w:120px;--qdj-h:160px}}
-        @media (min-width:1024px){.qdj-btn{--qdj-w:150px;--qdj-h:200px}}
+        .qdj-btn:focus-visible{outline:2px solid #2ee6e6;outline-offset:12px;border-radius:14px}
+        @media (min-width:640px){.qdj-btn{--qdj-s:.8}}
+        @media (min-width:1024px){.qdj-btn{--qdj-s:1}}
 
-        .qdj-book{position:relative;width:var(--qdj-w);height:var(--qdj-h);transform-style:preserve-3d;
-          transform:rotateX(6deg) rotateY(-14deg);transition:transform .7s cubic-bezier(.22,1,.36,1)}
-        .qdj-btn:hover .qdj-book,.qdj-btn:focus-visible .qdj-book{transform:rotateX(3deg) rotateY(-6deg) scale(1.05)}
-        .qdj-btn:disabled .qdj-book{transform:rotateX(6deg) rotateY(-14deg)}
+        /* Mise a l'echelle du bloc : la geometrie interne reste en px absolus,
+           exactement comme dans le fichier de design. */
+        .qdj-scale{width:320px;height:356px;transform:scale(var(--qdj-s));transform-origin:top left;
+          position:relative;perspective:1500px;perspective-origin:50% 45%}
 
-        /* Interieur : reste en arriere-plan, revele quand les couvertures s'ecartent. */
-        .qdj-inside{position:absolute;inset:0;border-radius:3px 6px 6px 3px;background:#1a1a1a;
-          transform:translateZ(-10px);overflow:hidden;box-shadow:inset 0 0 24px rgba(0,255,255,.18)}
-        .qdj-lines{position:absolute;inset:14% 12%;display:flex;flex-direction:column;gap:9%;opacity:0;
-          transition:opacity .5s ease .18s}
-        .qdj-btn:hover .qdj-lines,.qdj-btn:focus-visible .qdj-lines{opacity:1}
-        .qdj-lines i{display:block;height:2px;border-radius:2px;background:#00FFFF;opacity:.55}
-        .qdj-lines i:nth-child(2){width:72%}
-        .qdj-lines i:nth-child(3){width:86%}
-        .qdj-lines i:nth-child(4){width:60%}
-        .qdj-lines i:nth-child(5){width:78%}
+        .qdj-glow{position:absolute;left:50%;top:50%;width:360px;height:300px;margin:-150px 0 0 -180px;
+          border-radius:50%;filter:blur(4px);opacity:.5;transition:opacity .8s ease;
+          background:radial-gradient(closest-side,rgba(255,138,61,.55),rgba(255,138,61,0) 72%);
+          animation:qdj-pulse 5s ease-in-out infinite}
+        .qdj-ground{position:absolute;left:50%;bottom:-14px;width:250px;height:26px;margin-left:-125px;
+          border-radius:50%;opacity:1;transition:opacity .8s ease;
+          background:radial-gradient(closest-side,rgba(20,23,26,.16),rgba(20,23,26,0) 75%)}
 
-        /* Couvertures : charnieres sur les bords EXTERIEURS.
-           Avec des charnieres au centre (vrai livre) les deux battants se replient
-           vers le milieu et n'exposent que les bords : l'effet portes de saloon
-           disparait. Ici ils s'ecartent et degagent le centre. */
-        .qdj-cover{position:absolute;top:0;height:100%;width:50%;
-          background:linear-gradient(135deg,#FF6633,#FF9933);
-          transition:transform .7s cubic-bezier(.22,1,.36,1);backface-visibility:hidden;
-          display:flex;align-items:center;justify-content:center}
-        .qdj-cover-l{left:0;transform-origin:left center;border-radius:5px 0 0 5px;
-          box-shadow:inset -6px 0 12px rgba(0,0,0,.22),-4px 6px 18px rgba(255,102,51,.32)}
-        .qdj-cover-r{right:0;transform-origin:right center;border-radius:0 5px 5px 0;
-          box-shadow:inset 6px 0 12px rgba(0,0,0,.12),4px 6px 18px rgba(255,102,51,.32)}
-        /* 62deg et pas 80+ : au-dela les couvertures sont vues de profil et
-           l'effet "portes de saloon" disparait completement. */
-        .qdj-btn:hover .qdj-cover-l,.qdj-btn:focus-visible .qdj-cover-l{transform:rotateY(-62deg)}
-        .qdj-btn:hover .qdj-cover-r,.qdj-btn:focus-visible .qdj-cover-r{transform:rotateY(62deg)}
+        .qdj-float{position:absolute;inset:0;transform-style:preserve-3d;
+          animation:qdj-float 6.5s ease-in-out infinite}
+        .qdj-lift{position:absolute;inset:0;transform-style:preserve-3d;
+          transition:transform .8s cubic-bezier(.3,1.4,.5,1)}
 
-        /* Dos cyan : seul element qui reste visible livre ouvert. */
-        .qdj-spine{position:absolute;top:2%;bottom:2%;left:calc(50% - 1px);width:2px;border-radius:2px;
-          background:#00FFFF;box-shadow:0 0 10px rgba(0,255,255,.7);transform:translateZ(1px)}
+        /* Dos central lumineux : seul element toujours visible. */
+        .qdj-spine{position:absolute;left:50%;top:10px;width:16px;height:336px;margin-left:-8px;border-radius:8px;
+          background:linear-gradient(180deg,#2ee6e6,#14c9c9);box-shadow:0 0 22px rgba(45,224,224,.75);z-index:1}
 
-        .qdj-label{font-weight:800;font-size:calc(var(--qdj-w) * .115);line-height:1.15;letter-spacing:.04em;
-          text-transform:uppercase;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.35);text-align:center;padding:0 8%}
-        .qdj-cover-r .qdj-label{color:#00FFFF;font-size:calc(var(--qdj-w) * .1)}
-        /* Livre verrouille : la couverture porte un compte a rebours, plus long. */
-        /* Blanc et non cyan : le cyan sur l'orange de la couverture ne passe pas
-           le contraste a cette taille. */
-        .qdj-btn:disabled .qdj-cover-r .qdj-label{font-size:calc(var(--qdj-w) * .088);font-variant-numeric:tabular-nums;
-          letter-spacing:0;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.55)}
+        .qdj-inside{position:absolute;inset:6px 12px;border-radius:12px;background:#fff;border:3px solid #2ee6e6;
+          box-shadow:0 18px 34px rgba(20,23,26,.14),0 0 26px rgba(45,224,224,.35);overflow:hidden;z-index:2}
+        .qdj-gutter{position:absolute;left:50%;top:14px;bottom:14px;width:3px;margin-left:-1.5px;
+          background:rgba(45,224,224,.5);border-radius:2px}
+        .qdj-pages{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;align-items:center;
+          opacity:0;transition:opacity .45s ease .3s}
 
-        /* Epaisseur : ombre portee au sol, sous le livre. */
-        .qdj-shadow{position:absolute;left:8%;right:8%;bottom:-9%;height:10%;border-radius:50%;
-          background:radial-gradient(ellipse,rgba(0,0,0,.3),transparent 72%);
-          transform:translateZ(-30px);transition:opacity .6s ease}
-        .qdj-btn:hover .qdj-shadow,.qdj-btn:focus-visible .qdj-shadow{opacity:.55}
+        .qdj-pl{min-width:0;display:flex;flex-direction:column;align-items:center;gap:10px;padding:0 10px;text-align:center}
+        .qdj-mark{width:58px;height:58px;border-radius:14px;border:3px solid #2ee6e6;display:flex;align-items:center;
+          justify-content:center;font-size:30px;font-weight:900;color:#fff;box-shadow:0 0 16px rgba(45,224,224,.45);
+          background:linear-gradient(150deg,#ffa257,#f2650a)}
+        .qdj-n{font-size:15px;font-weight:900;letter-spacing:.06em;color:#14171a;text-transform:uppercase;
+          line-height:1.2;white-space:nowrap}
+        .qdj-sub{font-size:12px;font-weight:600;color:#7b8489;letter-spacing:.04em}
+
+        .qdj-pr{min-width:0;display:flex;flex-direction:column;align-items:center;gap:12px;padding:0 10px}
+        .qdj-bars{display:flex;flex-direction:column;gap:7px;width:100%}
+        .qdj-bars i{display:block;height:7px;border-radius:4px;background:rgba(242,101,10,.25)}
+        .qdj-bars i:first-child{background:linear-gradient(90deg,#ffa257,#f2650a);box-shadow:0 0 8px rgba(242,101,10,.35)}
+        .qdj-bars i:nth-child(2){width:74%}
+        .qdj-bars i:nth-child(3){width:88%}
+        .qdj-cta{display:flex;align-items:center;justify-content:center;padding:9px 14px;border-radius:999px;
+          background:linear-gradient(150deg,#ffa257,#f2650a);border:2px solid #2ee6e6;color:#fff;font-size:12px;
+          font-weight:900;letter-spacing:.08em;white-space:nowrap;text-transform:uppercase;
+          box-shadow:0 6px 14px rgba(242,101,10,.3)}
+        .qdj-streak{font-size:10px;font-weight:800;letter-spacing:.04em;color:#14c9c9;text-transform:uppercase;
+          white-space:nowrap}
+
+        /* Couvertures : charnieres sur les bords EXTERIEURS, elles s'ecartent
+           et degagent le centre. */
+        .qdj-cover{position:absolute;top:0;width:162px;height:356px;transform-style:preserve-3d;z-index:5;
+          transition:transform 1s cubic-bezier(.26,1.5,.42,1)}
+        .qdj-cover-l{left:0;transform-origin:left center}
+        .qdj-cover-r{right:0;transform-origin:right center}
+
+        .qdj-face{position:absolute;inset:0;backface-visibility:hidden;overflow:hidden;border:3px solid #2ee6e6;
+          box-shadow:0 16px 30px rgba(234,92,5,.28),0 0 22px rgba(45,224,224,.3)}
+        .qdj-cover-l .qdj-face{border-radius:14px 4px 4px 14px;border-right:none;
+          background:linear-gradient(150deg,#ffa257 0%,#f9761d 55%,#ea5c05 100%)}
+        .qdj-cover-r .qdj-face{border-radius:4px 14px 14px 4px;border-left:none;
+          background:linear-gradient(210deg,#ffa257 0%,#f9761d 55%,#ea5c05 100%)}
+
+        .qdj-sheen{position:absolute;inset:0;animation:qdj-sheen 4s ease-in-out infinite}
+        .qdj-cover-l .qdj-sheen{background:linear-gradient(112deg,rgba(255,255,255,0) 38%,rgba(255,255,255,.5) 50%,rgba(255,255,255,0) 62%)}
+        .qdj-cover-r .qdj-sheen{background:linear-gradient(-112deg,rgba(255,255,255,0) 38%,rgba(255,255,255,.5) 50%,rgba(255,255,255,0) 62%)}
+
+        .qdj-inner{position:absolute;border:2px solid rgba(255,255,255,.35)}
+        .qdj-cover-l .qdj-inner{inset:10px 0 10px 10px;border-right:none;border-radius:8px 0 0 8px}
+        .qdj-cover-r .qdj-inner{inset:10px 10px 10px 0;border-left:none;border-radius:0 8px 8px 0}
+
+        .qdj-q{position:absolute;top:108px;width:84px;height:84px;border-radius:22px;background:rgba(255,255,255,.14);
+          border:3px solid #2ee6e6;display:flex;align-items:center;justify-content:center;font-size:46px;
+          font-weight:900;color:#fff;box-shadow:0 0 20px rgba(45,224,224,.5)}
+        .qdj-cover-l .qdj-q{right:-42px}
+        .qdj-cover-r .qdj-q{left:-42px}
+
+        .qdj-cap{position:absolute;bottom:30px;font-size:15px;font-weight:900;letter-spacing:.16em;color:#fff;
+          text-transform:uppercase}
+        .qdj-cover-l .qdj-cap{left:16px}
+        .qdj-cover-r .qdj-cap{right:16px}
+        /* Compte a rebours : chiffres alignes, pas d'interlettrage, sinon
+           "12:04:59" deborde la couverture. */
+        .qdj-cap[data-countdown]{font-size:13px;letter-spacing:0;font-variant-numeric:tabular-nums;
+          text-shadow:0 1px 4px rgba(0,0,0,.45)}
+
+        .qdj-dash{position:absolute;top:26px;display:flex;flex-direction:column;gap:5px}
+        .qdj-cover-l .qdj-dash{left:16px}
+        .qdj-cover-r .qdj-dash{right:16px;align-items:flex-end}
+        .qdj-dash i{display:block;width:34px;height:5px;border-radius:3px;background:rgba(255,255,255,.75)}
+        .qdj-dash i:last-child{width:20px;background:rgba(255,255,255,.45)}
+
+        .qdj-back{position:absolute;inset:0;transform:rotateY(180deg);backface-visibility:hidden;background:#fff;
+          border:3px solid #2ee6e6}
+        .qdj-cover-l .qdj-back{border-radius:4px 14px 14px 4px;border-left:none}
+        .qdj-cover-r .qdj-back{border-radius:14px 4px 4px 14px;border-right:none}
+        .qdj-back::after{content:"";position:absolute;inset:14px;border-radius:8px;
+          border:2px dashed rgba(242,101,10,.25)}
+
+        /* Signet crante, sous le livre. */
+        .qdj-ribbon{position:absolute;left:50%;top:300px;width:14px;height:78px;margin-left:-7px;z-index:3;
+          background:linear-gradient(180deg,#2ee6e6,#12b8b8);box-shadow:0 0 14px rgba(45,224,224,.6);
+          clip-path:polygon(0 0,100% 0,100% 100%,50% 74%,0 100%)}
+
+        /* ------------------------------------------------------- ouverture */
+        .qdj-btn:hover .qdj-cover-l,.qdj-btn:focus-visible .qdj-cover-l,
+        .qdj-btn[data-open] .qdj-cover-l{transform:rotateY(calc(-1 * var(--qdj-swing)))}
+        .qdj-btn:hover .qdj-cover-r,.qdj-btn:focus-visible .qdj-cover-r,
+        .qdj-btn[data-open] .qdj-cover-r{transform:rotateY(var(--qdj-swing))}
+        .qdj-btn:hover .qdj-lift,.qdj-btn:focus-visible .qdj-lift,
+        .qdj-btn[data-open] .qdj-lift{transform:translateY(-10px) scale(1.03)}
+        .qdj-btn:hover .qdj-pages,.qdj-btn:focus-visible .qdj-pages,
+        .qdj-btn[data-open] .qdj-pages{opacity:1}
+        .qdj-btn:hover .qdj-glow,.qdj-btn:focus-visible .qdj-glow,
+        .qdj-btn[data-open] .qdj-glow{opacity:1}
+        .qdj-btn:hover .qdj-ground,.qdj-btn:focus-visible .qdj-ground,
+        .qdj-btn[data-open] .qdj-ground{opacity:.5}
+
+        /* Livre verrouille : il reste ferme, la couverture porte le decompte. */
+        .qdj-btn:disabled .qdj-cover-l,.qdj-btn:disabled .qdj-cover-r{transform:none}
+        .qdj-btn:disabled .qdj-pages{opacity:0}
+        .qdj-btn:disabled .qdj-lift{transform:none}
+        .qdj-btn:disabled .qdj-face{filter:saturate(.55) brightness(.92)}
+
+        @keyframes qdj-float{0%,100%{transform:translateY(0) rotateZ(0deg)}50%{transform:translateY(-9px) rotateZ(-.5deg)}}
+        @keyframes qdj-pulse{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:.85;transform:scale(1.05)}}
+        @keyframes qdj-sheen{0%,100%{opacity:.12}50%{opacity:.4}}
 
         @media (prefers-reduced-motion:reduce){
-          .qdj-book,.qdj-cover,.qdj-lines,.qdj-shadow{transition:none}
-          .qdj-btn:hover .qdj-cover-l,.qdj-btn:focus-visible .qdj-cover-l,
-          .qdj-btn:hover .qdj-cover-r,.qdj-btn:focus-visible .qdj-cover-r{transform:none}
+          .qdj-float,.qdj-glow,.qdj-sheen{animation:none}
+          .qdj-cover,.qdj-lift,.qdj-pages,.qdj-glow,.qdj-ground{transition:none}
         }
       `}</style>
 
-      <div className="qdj-book">
-        <div className="qdj-shadow" />
+      <div className="qdj-scale">
+        <div className="qdj-glow" />
+        <div className="qdj-ground" />
 
-        <div className="qdj-inside">
-          <div className="qdj-lines">
-            <i /><i /><i /><i /><i />
+        <div className="qdj-float">
+          <div className="qdj-lift">
+            <div className="qdj-spine" />
+
+            <div className="qdj-inside">
+              <div className="qdj-gutter" />
+              <div className="qdj-pages">
+                <div className="qdj-pl">
+                  <div className="qdj-mark">?</div>
+                  <div className="qdj-n">3 Questions</div>
+                  <div className="qdj-sub">un seul essai</div>
+                </div>
+                <div className="qdj-pr">
+                  <div className="qdj-bars">
+                    <i /><i /><i />
+                  </div>
+                  <div className="qdj-cta">Jouer</div>
+                  {streak > 0 && (
+                    <div className="qdj-streak" suppressHydrationWarning>
+                      Série · {streak} j
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="qdj-cover qdj-cover-l">
+              <div className="qdj-face">
+                <div className="qdj-sheen" />
+                <div className="qdj-inner" />
+                <div className="qdj-q">?</div>
+                <div className="qdj-cap">Quiz</div>
+                <div className="qdj-dash">
+                  <i /><i />
+                </div>
+              </div>
+              <div className="qdj-back" />
+            </div>
+
+            <div className="qdj-cover qdj-cover-r">
+              <div className="qdj-face">
+                <div className="qdj-sheen" />
+                <div className="qdj-inner" />
+                <div className="qdj-q">?</div>
+                <div
+                  className="qdj-cap"
+                  data-countdown={labelIsCountdown || undefined}
+                  suppressHydrationWarning
+                >
+                  {label}
+                </div>
+                <div className="qdj-dash">
+                  <i /><i />
+                </div>
+              </div>
+              <div className="qdj-back" />
+            </div>
+
+            <div className="qdj-ribbon" />
           </div>
         </div>
-
-        <div className="qdj-cover qdj-cover-l">
-          <span className="qdj-label">Quiz</span>
-        </div>
-        <div className="qdj-cover qdj-cover-r">
-          <span className="qdj-label" suppressHydrationWarning>
-            {label}
-          </span>
-        </div>
-
-        <div className="qdj-spine" />
       </div>
     </motion.button>
   );
