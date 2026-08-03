@@ -25,12 +25,39 @@ function ok<T>(data: T): Result<T> {
   return { data, error: null };
 }
 
+/**
+ * Traduit les erreurs Postgres/PostgREST en messages lisibles. Le detail
+ * technique reste dans la console pour le debug, mais n'atteint pas l'ecran.
+ */
+function translateDbError(raw: string): string {
+  const m = raw.toLowerCase();
+
+  if (m.includes("could not find the function") || m.includes("schema cache")) {
+    return "Classement pas encore initialise (migration SQL a appliquer).";
+  }
+  if (m.includes("relation") && m.includes("does not exist")) {
+    return "Base de donnees pas encore initialisee (migration SQL a appliquer).";
+  }
+  if (m.includes("jwt") || m.includes("not_authenticated")) {
+    return "Session expiree. Reconnecte-toi.";
+  }
+  if (m.includes("failed to fetch") || m.includes("networkerror")) {
+    return "Connexion au serveur impossible.";
+  }
+  return "Donnees indisponibles pour le moment.";
+}
+
 function fail<T>(fallback: T, error: unknown): Result<T> {
-  const message =
+  const raw =
     error instanceof Error ? error.message : typeof error === "string" ? error : "Erreur inconnue";
   if (process.env.NODE_ENV !== "production") {
-    console.warn("[userStats]", message);
+    console.warn("[userStats]", raw);
   }
+  return { data: fallback, error: translateDbError(raw) };
+}
+
+/** Erreur dont le message est deja redige pour l'utilisateur : pas de traduction. */
+function failWith<T>(fallback: T, message: string): Result<T> {
   return { data: fallback, error: message };
 }
 
@@ -76,7 +103,7 @@ export async function updateProfile(
 
     if (error) {
       // 23505 = violation d'unicite : le pseudo est deja pris.
-      if (error.code === "23505") return fail(null, "Ce pseudo est deja pris.");
+      if (error.code === "23505") return failWith(null, "Ce pseudo est deja pris.");
       return fail(null, error.message);
     }
     return ok((data as Profile | null) ?? null);
@@ -130,7 +157,7 @@ export async function submitGame(game: GameSubmission): Promise<Result<GameSubmi
 
     if (error) {
       if (error.message.includes("not_authenticated")) {
-        return fail(null, "Connecte-toi pour enregistrer ta partie.");
+        return failWith(null, "Connecte-toi pour enregistrer ta partie.");
       }
       return fail(null, error.message);
     }
