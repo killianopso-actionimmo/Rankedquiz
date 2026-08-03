@@ -11,6 +11,8 @@
      --color-*  : couleur CSS prete a l'emploi -> pour le CSS custom / inline
    ============================================================================ */
 
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600&display=swap");
+
 :root {
   /* ---------------------------------------------------------------- PRIMAIRE
      Vanilla : accents doux, highlights, fonds chaleureux */
@@ -87,6 +89,39 @@
   --font-regular: 400;
   --font-semibold: 600;
   --font-bold: 700;
+
+  /* Font families */
+  --font-bebas: "Bebas Neue", system-ui, sans-serif;
+  --font-poppins: "Poppins", system-ui, sans-serif;
+
+  /* H1 sizes: 48-64px desktop / 32-40px mobile */
+  --h1-size-desktop: 3.5rem;
+  --h1-size-mobile: 2rem;
+  --h1-line-height: 1.15;
+  --h1-letter-spacing: 0.02em;
+
+  /* H2 sizes: 36-48px desktop / 28-32px mobile */
+  --h2-size-desktop: 2.75rem;
+  --h2-size-mobile: 1.75rem;
+  --h2-line-height: 1.15;
+  --h2-letter-spacing: 0.02em;
+
+  /* H3 sizes: 24-32px desktop / 18-24px mobile (Poppins 600) */
+  --h3-size-desktop: 1.75rem;
+  --h3-size-mobile: 1.125rem;
+  --h3-line-height: 1.2;
+  --h3-letter-spacing: 0.015em;
+
+  /* Body text: 16px desktop / 14-16px mobile */
+  --body-size-desktop: 1rem;
+  --body-size-mobile: 0.875rem;
+  --body-line-height: 1.6;
+
+  /* Button/CTA sizes: 18-24px (Bebas Neue) */
+  --button-size-desktop: 1.25rem;
+  --button-size-mobile: 1rem;
+  --button-line-height: 1.1;
+  --button-letter-spacing: 0.02em;
 
   /* ==================================== RAYONS =========================== */
   --radius-sm: 0.5rem; /*  8px  — inputs, petits badges */

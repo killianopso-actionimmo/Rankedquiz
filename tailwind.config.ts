@@ -100,8 +100,8 @@ const config: Config = {
       },
 
       fontFamily: {
-        display: ["var(--font-outfit)", "sans-serif"],
-        sans: ["var(--font-inter)", "sans-serif"],
+        display: ["var(--font-bebas)", "sans-serif"],
+        sans: ["var(--font-poppins)", "sans-serif"],
       },
 
       fontWeight: {

@@ -6,6 +6,8 @@
 
 html {
   height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -14,9 +16,98 @@ body {
   min-height: 100%;
   background: rgb(var(--surface-page));
   color: rgb(var(--surface-text));
+  font-family: var(--font-poppins);
   font-weight: var(--font-regular);
+  font-size: var(--body-size-mobile);
+  line-height: var(--body-line-height);
   transition: background-color var(--duration-base) var(--ease-out);
   overscroll-behavior-y: none;
+}
+
+/* Responsive body text */
+@media (min-width: 640px) {
+  body {
+    font-size: var(--body-size-desktop);
+  }
+}
+
+/* H1 — Bebas Neue, titres principaux */
+h1 {
+  font-family: var(--font-bebas);
+  font-size: var(--h1-size-mobile);
+  font-weight: 400;
+  line-height: var(--h1-line-height);
+  letter-spacing: var(--h1-letter-spacing);
+  text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+  h1 {
+    font-size: var(--h1-size-desktop);
+  }
+}
+
+/* H2 — Bebas Neue, sous-titres */
+h2 {
+  font-family: var(--font-bebas);
+  font-size: var(--h2-size-mobile);
+  font-weight: 400;
+  line-height: var(--h2-line-height);
+  letter-spacing: var(--h2-letter-spacing);
+  text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+  h2 {
+    font-size: var(--h2-size-desktop);
+  }
+}
+
+/* H3 — Poppins 600, petits titres */
+h3 {
+  font-family: var(--font-poppins);
+  font-size: var(--h3-size-mobile);
+  font-weight: 600;
+  line-height: var(--h3-line-height);
+  letter-spacing: var(--h3-letter-spacing);
+}
+
+@media (min-width: 640px) {
+  h3 {
+    font-size: var(--h3-size-desktop);
+  }
+}
+
+/* H4, H5, H6 — fallback to Poppins 600 */
+h4,
+h5,
+h6 {
+  font-family: var(--font-poppins);
+  font-weight: 600;
+  line-height: var(--h3-line-height);
+}
+
+/* Paragraphs — Poppins 400 */
+p {
+  font-family: var(--font-poppins);
+  font-weight: var(--font-regular);
+  line-height: var(--body-line-height);
+}
+
+/* Buttons — Bebas Neue, uppercase */
+button {
+  font-family: var(--font-bebas);
+  font-size: var(--button-size-mobile);
+  font-weight: 400;
+  line-height: var(--button-line-height);
+  letter-spacing: var(--button-letter-spacing);
+  text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+  button {
+    font-size: var(--button-size-desktop);
+  }
 }
 
 /* Lenis pilote le scroll : on neutralise le smooth scroll natif pour eviter que
