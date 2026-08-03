@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Mail, Lock, User } from "lucide-react";
+import { X, Mail, Lock, User, Pencil, Check } from "lucide-react";
 import { NeonButton } from "@/components/ui/NeonButton";
+import { GenericAvatar } from "@/components/chaos/ChaosAvatar";
+import { avatarIndex } from "@/components/profile/PhotoUpload";
 import { usePlayerName, setPlayerName } from "@/hooks/usePlayerName";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -20,7 +22,15 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const { user, signUp, signIn, signOut, updateProfile, resetPassword } = useAuth();
+
+  const [editingName, setEditingName] = useState(false);
+  const [nameSaved, setNameSaved] = useState(false);
+  const [nameError, setNameError] = useState("");
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  /** Dernier pseudo confirme, pour annuler proprement (Echap ou echec DB). */
+  const savedNameRef = useRef(currentPlayerName);
+
+  const { user, profile, signUp, signIn, signOut, updateProfile, resetPassword } = useAuth();
 
   useEffect(() => {
     if (user) {
@@ -35,6 +45,8 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
   useEffect(() => {
     setError("");
     setSuccess("");
+    setEditingName(false);
+    setNameError("");
   }, [mode]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -57,12 +69,61 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
     setSuccess("Si un compte existe pour cet email, un lien vient d'etre envoye.");
   };
 
-  const handleSaveName = async () => {
-    if (playerName.trim()) {
-      setPlayerName(playerName);
-      await updateProfile({ displayName: playerName });
-      onClose();
+  /**
+   * Pseudo courant. Une fois connecte la table profiles fait foi ; le pseudo
+   * localStorage n'est qu'un repli pour les joueurs anonymes. Derive au rendu
+   * plutot que recopie dans un state via useEffect : evite un rendu en cascade.
+   */
+  const effectiveName = profile?.username ?? currentPlayerName;
+  const displayedName = editingName ? playerName : effectiveName;
+
+  const startEditingName = () => {
+    savedNameRef.current = effectiveName;
+    setInputPlayerName(effectiveName);
+    setNameError("");
+    setEditingName(true);
+    // Le focus doit attendre la levee de readOnly, sinon il est ignore.
+    requestAnimationFrame(() => nameInputRef.current?.focus());
+  };
+
+  /**
+   * Sauvegarde automatique du pseudo (sortie du champ, Entree, ou clic sur la
+   * coche). Aucun bouton "Enregistrer" : le champ se valide tout seul.
+   */
+  const commitName = async () => {
+    if (!editingName) return;
+
+    const trimmed = playerName.trim();
+
+    if (trimmed === savedNameRef.current.trim()) {
+      setEditingName(false);
+      return;
     }
+    if (trimmed.length < 3) {
+      setNameError("3 caractères minimum.");
+      return;
+    }
+
+    setNameError("");
+    setEditingName(false);
+    setPlayerName(trimmed);
+    setInputPlayerName(trimmed);
+
+    if (user) {
+      const { error: err } = await updateProfile({ displayName: trimmed });
+      if (err) {
+        // Echec cote base : on remet le pseudo precedent pour ne pas laisser
+        // croire que le changement a ete pris en compte.
+        setNameError(err);
+        setInputPlayerName(savedNameRef.current);
+        setPlayerName(savedNameRef.current);
+        return;
+      }
+    }
+
+    savedNameRef.current = trimmed;
+    setNameSaved(true);
+    setTimeout(() => setNameSaved(false), 1600);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -169,27 +230,92 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
             </div>
 
             {mode === "profile" ? (
-              <form className="flex flex-col gap-3" onSubmit={(e) => {
-                e.preventDefault();
-                handleSaveName();
-              }}>
-                <label className="flex items-center gap-3 rounded-sm border border-line bg-background-sunken px-4 py-3 focus-within:border-primary">
+              <form
+                className="flex flex-col gap-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  commitName();
+                }}
+              >
+                {/* Photo de profil, uniquement si connecte : hors connexion il
+                    n'y a ni photo ni avatar enregistre. */}
+                {user && (
+                  <div className="flex justify-center">
+                    <div className="h-20 w-20 overflow-hidden rounded-full ring-2 ring-primary">
+                      {profile?.profile_photo_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={profile.profile_photo_url}
+                          alt="Photo de profil"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <GenericAvatar
+                          index={avatarIndex(profile?.avatar_default ?? "avatar_1")}
+                          className="h-full w-full"
+                        />
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <label
+                  className={cn(
+                    "flex items-center gap-3 rounded-sm border px-4 py-3 transition-colors",
+                    editingName
+                      ? "border-primary bg-background-sunken"
+                      : "border-line bg-background-sunken",
+                  )}
+                >
                   <User className="h-4 w-4 shrink-0 text-ink-faint" />
                   <input
+                    ref={nameInputRef}
                     type="text"
                     placeholder="Ton pseudo"
                     autoComplete="nickname"
-                    value={playerName}
+                    value={displayedName}
+                    readOnly={!editingName}
+                    maxLength={20}
                     onChange={(e) => setInputPlayerName(e.target.value)}
-                    className="w-full bg-transparent text-sm text-ink placeholder:text-ink-faint focus:outline-none"
+                    /* Sauvegarde automatique : a la sortie du champ ou sur
+                       Entree. Pas de bouton dedie. */
+                    onBlur={commitName}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        commitName();
+                      }
+                      if (e.key === "Escape") {
+                        setInputPlayerName(savedNameRef.current);
+                        setEditingName(false);
+                      }
+                    }}
+                    className={cn(
+                      "w-full bg-transparent text-sm text-ink placeholder:text-ink-faint focus:outline-none",
+                      !editingName && "cursor-pointer",
+                    )}
+                    onClick={() => !editingName && startEditingName()}
                   />
+                  <button
+                    type="button"
+                    onClick={() => (editingName ? commitName() : startEditingName())}
+                    aria-label={editingName ? "Valider le pseudo" : "Modifier le pseudo"}
+                    className="btn-tap flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-ink-faint transition-colors hover:text-primary active:scale-95"
+                  >
+                    {nameSaved ? (
+                      <Check className="h-4 w-4 text-success" />
+                    ) : editingName ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Pencil className="h-3.5 w-3.5" />
+                    )}
+                  </button>
                 </label>
+
+                {nameError && <p className="text-xs text-danger">{nameError}</p>}
                 {user && (
                   <p className="text-xs text-ink-faint">Connecté en tant que {user.email}</p>
                 )}
-                <NeonButton type="submit" variant="primary" size="lg" className="mt-2 w-full">
-                  Enregistrer
-                </NeonButton>
                 {user && (
                   <>
                     <Link href="/profile" onClick={onClose} className="w-full">

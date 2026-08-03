@@ -3,21 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { RankBadge } from "@/components/ui/RankBadge";
 import { Trophy3D } from "@/components/three-d/Trophy3D";
 import { Badge3D } from "@/components/three-d/Badge3D";
 import { Flame3D } from "@/components/three-d/Flame3D";
 import { AuthModal } from "@/components/auth/AuthModal";
-import { getRankProgress } from "@/lib/ranks";
-import { useStoredElo, useStoredXp } from "@/lib/storage";
+import { useAuth } from "@/hooks/useAuth";
+import { useStoredXp } from "@/lib/storage";
 import { useDailyStreak } from "@/lib/streak";
 import { calculateLevelFromXp, getLevelTier } from "@/lib/xp";
+import { cn } from "@/lib/utils";
 
 export function HomeHeader() {
-  const elo = useStoredElo();
   const xp = useStoredXp();
   const { streak } = useDailyStreak();
-  const { rank } = getRankProgress(elo);
+  const { user, initialized } = useAuth();
   const { level, xpInLevel, xpForNext } = calculateLevelFromXp(xp);
   const tierInfo = getLevelTier(level);
   const [authOpen, setAuthOpen] = useState(false);
@@ -75,10 +74,16 @@ export function HomeHeader() {
           <button
             type="button"
             onClick={() => setAuthOpen(true)}
-            aria-label="Mon profil"
-            className="btn-tap rounded-full active:scale-95"
+            aria-label={user ? "Mon profil" : "Se connecter"}
+            /* Masque tant que la session n'est pas lue : afficher "Se connecter"
+               puis basculer sur "Profil" ferait clignoter un libelle faux a
+               chaque chargement pour les joueurs connectes. */
+            className={cn(
+              "btn-tap whitespace-nowrap rounded-full border border-line bg-background-sunken px-3 py-1.5 font-display text-xs font-bold text-ink transition-opacity active:scale-95",
+              !initialized && "pointer-events-none opacity-0",
+            )}
           >
-            <RankBadge tier={rank.tier} label={rank.label} size="sm" />
+            {user ? "Profil" : "Se connecter"}
           </button>
         </div>
       </div>
